@@ -1,0 +1,40 @@
+.server-overview__list,
+.server-overview__loading {
+  display: flex;
+  flex-direction: column;
+}
+
+.server-overview__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.server-overview__item:last-child {
+  border-bottom: none;
+}
+
+.server-overview__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.server-overview__name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.server-overview__host {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+}
+
+.server-overview__empty {
+  padding: var(--space-xl);
+  text-align: center;
+  color: var(--text-tertiary);
+}

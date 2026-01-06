@@ -29,3 +29,6 @@ export { Skeleton, SkeletonText, SkeletonAvatar, SkeletonButton } from './skelet
 
 // Dropdown
 export { Dropdown, DropdownItem, DropdownDivider, DropdownLabel } from './dropdown';
+
+// Select
+export { Select } from './select';

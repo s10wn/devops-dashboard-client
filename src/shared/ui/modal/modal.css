@@ -127,3 +127,22 @@
 .ui-modal__footer--between {
   justify-content: space-between;
 }
+
+/* Resizable */
+.ui-modal--resizable {
+  resize: both;
+  min-width: 400px;
+  min-height: 300px;
+  max-width: 90vw;
+  max-height: 90vh;
+}
+
+.ui-modal--resizable.ui-modal--lg {
+  width: 700px;
+  height: 600px;
+}
+
+.ui-modal--resizable.ui-modal--xl {
+  width: 900px;
+  height: 700px;
+}

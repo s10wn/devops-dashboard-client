@@ -12,6 +12,7 @@ interface ModalProps {
   size?: ModalSize;
   closeOnOverlay?: boolean;
   closeOnEsc?: boolean;
+  resizable?: boolean;
 }
 
 interface ModalHeaderProps {
@@ -35,6 +36,7 @@ export const Modal = ({
   size = 'md',
   closeOnOverlay = true,
   closeOnEsc = true,
+  resizable = false,
 }: ModalProps) => {
   const handleEsc = useCallback(
     (e: KeyboardEvent) => {
@@ -65,13 +67,22 @@ export const Modal = ({
     }
   };
 
+  const modalClasses = [
+    'ui-modal',
+    `ui-modal--${size}`,
+    resizable && 'ui-modal--resizable',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const handleModalClick = (e: React.MouseEvent) => {
+    // Prevent clicks inside modal from closing it (especially during resize)
+    e.stopPropagation();
+  };
+
   return createPortal(
     <div className="ui-modal__overlay" onClick={handleOverlayClick}>
-      <div
-        className={`ui-modal ui-modal--${size}`}
-        role="dialog"
-        aria-modal="true"
-      >
+      <div className={modalClasses} role="dialog" aria-modal="true" onClick={handleModalClick}>
         {children}
       </div>
     </div>,
