@@ -1,8 +1,12 @@
+import { ApolloProvider } from '@apollo/client/react';
+import { RouterProvider } from 'react-router-dom';
+import { apolloClient } from '@shared/api';
+import { router } from './router';
+
 export function App() {
   return (
-    <div className="app">
-      <h1>DevOps Dashboard</h1>
-      <p>Welcome to your development operations center</p>
-    </div>
+    <ApolloProvider client={apolloClient}>
+      <RouterProvider router={router} />
+    </ApolloProvider>
   );
 }
