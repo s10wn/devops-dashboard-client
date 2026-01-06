@@ -1,8 +1,6 @@
-export default function ProjectsPage() {
-  return (
-    <div>
-      <h1>Projects</h1>
-      <p>Manage your projects</p>
-    </div>
-  );
-}
+export const ProjectsPage = () => (
+  <div>
+    <h1>Проекты</h1>
+    <p>Управление проектами</p>
+  </div>
+);

@@ -1,8 +1,6 @@
-export default function DashboardPage() {
-  return (
-    <div>
-      <h1>Dashboard</h1>
-      <p>Welcome to DevOps Dashboard</p>
-    </div>
-  );
-}
+export const DashboardPage = () => (
+  <div>
+    <h1>Обзор</h1>
+    <p>Добро пожаловать в DevOps Dashboard</p>
+  </div>
+);

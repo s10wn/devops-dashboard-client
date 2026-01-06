@@ -1,7 +1,7 @@
 import { Outlet, Navigate } from 'react-router-dom';
 import { useAuthStore } from '@shared/lib/stores/auth-store';
 
-export function AuthLayout() {
+export const AuthLayout = () => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   if (isAuthenticated) {

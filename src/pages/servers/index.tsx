@@ -1,8 +1,6 @@
-export default function ServersPage() {
-  return (
-    <div>
-      <h1>Servers</h1>
-      <p>Monitor your servers</p>
-    </div>
-  );
-}
+export const ServersPage = () => (
+  <div>
+    <h1>Серверы</h1>
+    <p>Мониторинг серверов</p>
+  </div>
+);

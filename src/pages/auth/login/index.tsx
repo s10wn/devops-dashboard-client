@@ -1,23 +1,46 @@
-import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation } from '@apollo/client/react';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 import { LOGIN_MUTATION } from '@features/auth/api/mutations';
 import { useAuthStore } from '@shared/lib/stores/auth-store';
+import { Button, Input } from '@shared/ui';
 import type { AuthResponse } from '@shared/types';
 
-interface LoginData {
-  login: AuthResponse;
-}
+type LoginFormData = {
+  email: string;
+  password: string;
+};
 
-export default function LoginPage() {
+type LoginData = {
+  login: AuthResponse;
+};
+
+const loginSchema = yup.object({
+  email: yup
+    .string()
+    .email('Неверный формат email')
+    .required('Email обязателен'),
+  password: yup
+    .string()
+    .min(6, 'Пароль должен быть минимум 6 символов')
+    .required('Пароль обязателен'),
+});
+
+export const LoginPage = () => {
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: yupResolver(loginSchema),
+  });
 
-  const [loginMutation, { loading }] = useMutation<LoginData>(LOGIN_MUTATION, {
+  const [loginMutation, { loading, error }] = useMutation<LoginData>(LOGIN_MUTATION, {
     onCompleted: (data) => {
       const { tokens, userId, email, name } = data.login;
       login(
@@ -26,57 +49,44 @@ export default function LoginPage() {
       );
       navigate('/dashboard');
     },
-    onError: (err) => {
-      setError(err.message);
-    },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    loginMutation({ variables: { input: { email, password } } });
+  const onSubmit = (data: LoginFormData) => {
+    loginMutation({ variables: { input: data } });
   };
 
   return (
     <div className="auth-form">
-      <h1>Sign in</h1>
-      <p className="auth-form__subtitle">Welcome back to DevOps Dashboard</p>
+      <h1>Вход</h1>
+      <p className="auth-form__subtitle">Добро пожаловать в DevOps Dashboard</p>
 
-      <form className="auth-form__form" onSubmit={handleSubmit}>
-        {error && <div className="form-error">{error}</div>}
+      <form className="auth-form__form" onSubmit={handleSubmit(onSubmit)}>
+        {error && <div className="form-error">{error.message}</div>}
 
-        <div className="form-field">
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            id="email"
-            placeholder="name@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
+        <Input
+          label="Email"
+          type="email"
+          placeholder="name@example.com"
+          error={errors.email?.message}
+          {...register('email')}
+        />
 
-        <div className="form-field">
-          <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
+        <Input
+          label="Пароль"
+          type="password"
+          placeholder="••••••••"
+          error={errors.password?.message}
+          {...register('password')}
+        />
 
-        <button type="submit" className="btn btn--primary btn--full" disabled={loading}>
-          {loading ? 'Signing in...' : 'Sign in'}
-        </button>
+        <Button type="submit" variant="primary" fullWidth loading={loading}>
+          Войти
+        </Button>
       </form>
 
       <p className="auth-form__footer">
-        Don't have an account? <Link to="/register">Sign up</Link>
+        Нет аккаунта? <Link to="/register">Зарегистрироваться</Link>
       </p>
     </div>
   );
-}
+};

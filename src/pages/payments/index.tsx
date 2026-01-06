@@ -1,8 +1,6 @@
-export default function PaymentsPage() {
-  return (
-    <div>
-      <h1>Payments</h1>
-      <p>Track your payments</p>
-    </div>
-  );
-}
+export const PaymentsPage = () => (
+  <div>
+    <h1>Платежи</h1>
+    <p>Отслеживание платежей</p>
+  </div>
+);

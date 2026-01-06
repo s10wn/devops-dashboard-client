@@ -1,8 +1,6 @@
-export default function SettingsPage() {
-  return (
-    <div>
-      <h1>Settings</h1>
-      <p>Configure your account</p>
-    </div>
-  );
-}
+export const SettingsPage = () => (
+  <div>
+    <h1>Настройки</h1>
+    <p>Настройки аккаунта</p>
+  </div>
+);

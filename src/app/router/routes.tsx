@@ -5,25 +5,25 @@ import { AuthLayout } from './layouts/auth-layout';
 import { DashboardLayout } from './layouts/dashboard-layout';
 
 const DashboardPage = lazy(() =>
-  import('@pages/dashboard/index.tsx').then((m) => ({ default: m.default }))
+  import('@pages/dashboard/index.tsx').then((m) => ({ default: m.DashboardPage }))
 );
 const ProjectsPage = lazy(() =>
-  import('@pages/projects/index.tsx').then((m) => ({ default: m.default }))
+  import('@pages/projects/index.tsx').then((m) => ({ default: m.ProjectsPage }))
 );
 const ServersPage = lazy(() =>
-  import('@pages/servers/index.tsx').then((m) => ({ default: m.default }))
+  import('@pages/servers/index.tsx').then((m) => ({ default: m.ServersPage }))
 );
 const PaymentsPage = lazy(() =>
-  import('@pages/payments/index.tsx').then((m) => ({ default: m.default }))
+  import('@pages/payments/index.tsx').then((m) => ({ default: m.PaymentsPage }))
 );
 const SettingsPage = lazy(() =>
-  import('@pages/settings/index.tsx').then((m) => ({ default: m.default }))
+  import('@pages/settings/index.tsx').then((m) => ({ default: m.SettingsPage }))
 );
 const LoginPage = lazy(() =>
-  import('@pages/auth/login/index.tsx').then((m) => ({ default: m.default }))
+  import('@pages/auth/login/index.tsx').then((m) => ({ default: m.LoginPage }))
 );
 const RegisterPage = lazy(() =>
-  import('@pages/auth/register/index.tsx').then((m) => ({ default: m.default }))
+  import('@pages/auth/register/index.tsx').then((m) => ({ default: m.RegisterPage }))
 );
 
 const PageLoader = () => <div className="page-loader">Loading...</div>;

@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 import type { User, AuthTokens } from '@shared/types';
 import { setTokens, clearTokens, getAccessToken } from '@shared/api';
 
-interface AuthState {
+type AuthState = {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -14,7 +14,7 @@ interface AuthState {
   setLoading: (loading: boolean) => void;
   updateTokens: (tokens: AuthTokens) => void;
   checkAuth: () => boolean;
-}
+};
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -50,7 +50,20 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
-      partialize: (state) => ({ user: state.user }),
+      partialize: (state) => ({
+        user: state.user,
+        isAuthenticated: state.isAuthenticated,
+      }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          const token = getAccessToken();
+          if (!token) {
+            state.isAuthenticated = false;
+            state.user = null;
+          }
+          state.isLoading = false;
+        }
+      },
     }
   )
 );

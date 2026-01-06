@@ -1,24 +1,51 @@
-import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation } from '@apollo/client/react';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 import { REGISTER_MUTATION } from '@features/auth/api/mutations';
 import { useAuthStore } from '@shared/lib/stores/auth-store';
+import { Button, Input } from '@shared/ui';
 import type { AuthResponse } from '@shared/types';
 
-interface RegisterData {
-  register: AuthResponse;
-}
+type RegisterFormData = {
+  name: string;
+  email: string;
+  password: string;
+};
 
-export default function RegisterPage() {
+type RegisterData = {
+  register: AuthResponse;
+};
+
+const registerSchema = yup.object({
+  name: yup
+    .string()
+    .min(2, 'Имя должно быть минимум 2 символа')
+    .required('Имя обязательно'),
+  email: yup
+    .string()
+    .email('Неверный формат email')
+    .required('Email обязателен'),
+  password: yup
+    .string()
+    .min(6, 'Пароль должен быть минимум 6 символов')
+    .required('Пароль обязателен'),
+});
+
+export const RegisterPage = () => {
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
 
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const {
+    register: registerField,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterFormData>({
+    resolver: yupResolver(registerSchema),
+  });
 
-  const [registerMutation, { loading }] = useMutation<RegisterData>(REGISTER_MUTATION, {
+  const [registerMutation, { loading, error }] = useMutation<RegisterData>(REGISTER_MUTATION, {
     onCompleted: (data) => {
       const { tokens, userId, email, name } = data.register;
       login(
@@ -27,70 +54,52 @@ export default function RegisterPage() {
       );
       navigate('/dashboard');
     },
-    onError: (err) => {
-      setError(err.message);
-    },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    registerMutation({ variables: { input: { name, email, password } } });
+  const onSubmit = (data: RegisterFormData) => {
+    registerMutation({ variables: { input: data } });
   };
 
   return (
     <div className="auth-form">
-      <h1>Create account</h1>
-      <p className="auth-form__subtitle">Start managing your DevOps</p>
+      <h1>Регистрация</h1>
+      <p className="auth-form__subtitle">Начните управлять вашей инфраструктурой</p>
 
-      <form className="auth-form__form" onSubmit={handleSubmit}>
-        {error && <div className="form-error">{error}</div>}
+      <form className="auth-form__form" onSubmit={handleSubmit(onSubmit)}>
+        {error && <div className="form-error">{error.message}</div>}
 
-        <div className="form-field">
-          <label htmlFor="name">Name</label>
-          <input
-            type="text"
-            id="name"
-            placeholder="John Doe"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-        </div>
+        <Input
+          label="Имя"
+          type="text"
+          placeholder="Иван Иванов"
+          error={errors.name?.message}
+          {...registerField('name')}
+        />
 
-        <div className="form-field">
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            id="email"
-            placeholder="name@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
+        <Input
+          label="Email"
+          type="email"
+          placeholder="name@example.com"
+          error={errors.email?.message}
+          {...registerField('email')}
+        />
 
-        <div className="form-field">
-          <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={6}
-          />
-        </div>
+        <Input
+          label="Пароль"
+          type="password"
+          placeholder="••••••••"
+          error={errors.password?.message}
+          {...registerField('password')}
+        />
 
-        <button type="submit" className="btn btn--primary btn--full" disabled={loading}>
-          {loading ? 'Creating...' : 'Create account'}
-        </button>
+        <Button type="submit" variant="primary" fullWidth loading={loading}>
+          Создать аккаунт
+        </Button>
       </form>
 
       <p className="auth-form__footer">
-        Already have an account? <Link to="/login">Sign in</Link>
+        Уже есть аккаунт? <Link to="/login">Войти</Link>
       </p>
     </div>
   );
-}
+};
