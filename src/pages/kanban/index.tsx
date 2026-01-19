@@ -1,10 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useMutation } from '@apollo/client/react';
-import { useTeamStore } from '@entities/team';
 import {
   BOARD_QUERY,
-  TEAM_BOARDS_QUERY,
-  TEAM_LABELS_QUERY,
+  MY_BOARDS_QUERY,
   MOVE_TASK_MUTATION,
   TASK_CREATED_SUBSCRIPTION,
   TASK_UPDATED_SUBSCRIPTION,
@@ -54,7 +52,6 @@ type Board = {
   name: string;
   slug: string;
   description?: string;
-  teamId: string;
   columns: Column[];
 };
 
@@ -65,7 +62,6 @@ type BoardListItem = {
 };
 
 export const KanbanPage = () => {
-  const { currentTeam } = useTeamStore();
   const [selectedBoardId, setSelectedBoardId] = useState<string | null>(null);
   const [isCreateBoardOpen, setIsCreateBoardOpen] = useState(false);
   const [isCreateColumnOpen, setIsCreateColumnOpen] = useState(false);
@@ -73,16 +69,12 @@ export const KanbanPage = () => {
   const [selectedColumnId, setSelectedColumnId] = useState<string | null>(null);
   const [draggedTask, setDraggedTask] = useState<{ taskId: string; columnId: string } | null>(null);
 
-  const { data: boardsData, loading: boardsLoading } = useQuery<{ teamBoards: BoardListItem[] }>(
-    TEAM_BOARDS_QUERY,
-    {
-      variables: { teamId: currentTeam?.id },
-      skip: !currentTeam?.id,
-    }
+  const { data: boardsData, loading: boardsLoading } = useQuery<{ myBoards: BoardListItem[] }>(
+    MY_BOARDS_QUERY
   );
 
   useEffect(() => {
-    const boards = boardsData?.teamBoards;
+    const boards = boardsData?.myBoards;
     if (boards && boards.length > 0 && !selectedBoardId) {
       setSelectedBoardId(boards[0].id);
     }
@@ -131,21 +123,12 @@ export const KanbanPage = () => {
     };
   }, [selectedBoardId, subscribeToMore, refetchBoard]);
 
-  const { data: labelsData } = useQuery<{ teamLabels: Label[] }>(
-    TEAM_LABELS_QUERY,
-    {
-      variables: { teamId: currentTeam?.id },
-      skip: !currentTeam?.id,
-    }
-  );
-
   const [moveTask] = useMutation(MOVE_TASK_MUTATION, {
     refetchQueries: selectedBoardId ? [{ query: BOARD_QUERY, variables: { id: selectedBoardId } }] : [],
   });
 
-  const boards = (boardsData?.teamBoards || []) as BoardListItem[];
+  const boards = (boardsData?.myBoards || []) as BoardListItem[];
   const board = boardData?.board as Board | undefined;
-  const labels = (labelsData?.teamLabels || []) as Label[];
   const selectedBoard = boards.find((b) => b.id === selectedBoardId);
 
   const handleDragStart = useCallback((e: React.DragEvent, taskId: string, columnId: string) => {
@@ -222,15 +205,6 @@ export const KanbanPage = () => {
     };
     return icons[priority];
   };
-
-  if (!currentTeam) {
-    return (
-      <div className="kanban__empty">
-        <div className="kanban__empty-title">Выберите команду</div>
-        <p className="kanban__empty-text">Для работы с досками выберите команду в боковой панели</p>
-      </div>
-    );
-  }
 
   if (boardsLoading) {
     return (
@@ -422,7 +396,6 @@ export const KanbanPage = () => {
       <CreateBoardModal
         isOpen={isCreateBoardOpen}
         onClose={() => setIsCreateBoardOpen(false)}
-        teamId={currentTeam.id}
       />
 
       {selectedBoardId && (
@@ -443,8 +416,6 @@ export const KanbanPage = () => {
           }}
           task={selectedTask}
           columnId={selectedColumnId}
-          teamId={currentTeam.id}
-          labels={labels}
           boardId={selectedBoardId!}
         />
       )}
