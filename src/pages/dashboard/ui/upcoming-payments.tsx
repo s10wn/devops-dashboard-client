@@ -68,7 +68,7 @@ export const UpcomingPayments = () => {
                   </div>
                   <div className="upcoming-payments__right">
                     <span className="upcoming-payments__amount">
-                      {billing.amount.toLocaleString()} {billing.currency === 'RUB' ? '₽' : billing.currency}
+                      {billing.amount.toLocaleString()} {billing.currency === 'RUB' ? 'сомони' : billing.currency}
                     </span>
                     <Badge variant={status.variant} size="sm">
                       {status.label}

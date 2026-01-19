@@ -30,7 +30,6 @@ type Task = {
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
   position: number;
   dueDate?: string;
-  estimatedHours?: number;
   columnId: string;
   projectId?: string;
   project?: Project;
@@ -71,7 +70,6 @@ export const TaskModal = ({ isOpen, onClose, task, columnId, labels, projects, o
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<string>('MEDIUM');
   const [dueDate, setDueDate] = useState('');
-  const [estimatedHours, setEstimatedHours] = useState('');
   const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   const [newComment, setNewComment] = useState('');
@@ -123,7 +121,6 @@ export const TaskModal = ({ isOpen, onClose, task, columnId, labels, projects, o
       setDescription(task.description || '');
       setPriority(task.priority);
       setDueDate(task.dueDate ? task.dueDate.split('T')[0] : '');
-      setEstimatedHours(task.estimatedHours?.toString() || '');
       setSelectedProjectId(task.projectId || '');
       setSelectedLabelIds([]);
     } else {
@@ -131,7 +128,6 @@ export const TaskModal = ({ isOpen, onClose, task, columnId, labels, projects, o
       setDescription('');
       setPriority('MEDIUM');
       setDueDate('');
-      setEstimatedHours('');
       setSelectedProjectId('');
       setSelectedLabelIds([]);
     }
@@ -142,7 +138,6 @@ export const TaskModal = ({ isOpen, onClose, task, columnId, labels, projects, o
     setDescription('');
     setPriority('MEDIUM');
     setDueDate('');
-    setEstimatedHours('');
     setSelectedProjectId('');
     setSelectedLabelIds([]);
     setNewComment('');
@@ -158,7 +153,6 @@ export const TaskModal = ({ isOpen, onClose, task, columnId, labels, projects, o
       description: description.trim() || undefined,
       priority,
       dueDate: dueDate || undefined,
-      estimatedHours: estimatedHours ? parseFloat(estimatedHours) : undefined,
       labelIds: selectedLabelIds.length > 0 ? selectedLabelIds : undefined,
       projectId: selectedProjectId || undefined,
     };
@@ -366,9 +360,10 @@ export const TaskModal = ({ isOpen, onClose, task, columnId, labels, projects, o
               <div className="task-modal__detail-label">Проект</div>
               <div className="task-modal__detail-value">
                 <select
-                  className="task-modal__select"
+                  className="task-modal__select task-modal__select--project"
                   value={selectedProjectId}
                   onChange={(e) => setSelectedProjectId(e.target.value)}
+                  style={selectedProject ? { borderColor: selectedProject.color } : undefined}
                 >
                   <option value="">Без проекта</option>
                   {projects.map((p) => (
@@ -377,15 +372,6 @@ export const TaskModal = ({ isOpen, onClose, task, columnId, labels, projects, o
                     </option>
                   ))}
                 </select>
-                {selectedProject && (
-                  <div className="task-modal__project-preview">
-                    <span
-                      className="task-modal__project-dot"
-                      style={{ backgroundColor: selectedProject.color || '#737373' }}
-                    />
-                    <span>{selectedProject.name}</span>
-                  </div>
-                )}
               </div>
             </div>
 
@@ -417,25 +403,6 @@ export const TaskModal = ({ isOpen, onClose, task, columnId, labels, projects, o
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
                 />
-              </div>
-            </div>
-
-            {/* Estimated Hours */}
-            <div className="task-modal__detail">
-              <div className="task-modal__detail-label">Оценка времени</div>
-              <div className="task-modal__detail-value">
-                <div className="task-modal__time-input-wrapper">
-                  <input
-                    type="number"
-                    className="task-modal__time-input"
-                    value={estimatedHours}
-                    onChange={(e) => setEstimatedHours(e.target.value)}
-                    placeholder="0"
-                    min="0"
-                    step="0.5"
-                  />
-                  <span className="task-modal__time-suffix">ч</span>
-                </div>
               </div>
             </div>
 

@@ -35,7 +35,6 @@ type Task = {
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
   position: number;
   dueDate?: string;
-  estimatedHours?: number;
   columnId: string;
   projectId?: string;
   project?: Project;
@@ -144,7 +143,7 @@ export const KanbanPage = () => {
     };
   }, [subscribeToMore, refetchTasks]);
 
-  const { data: labelsData } = useQuery<{ labels: Label[] }>(LABELS_QUERY);
+  const { data: labelsData } = useQuery<{ myLabels: Label[] }>(LABELS_QUERY);
 
   const [moveTask] = useMutation(MOVE_TASK_MUTATION, {
     onCompleted: () => {
@@ -154,7 +153,7 @@ export const KanbanPage = () => {
 
   const columns = (columnsData?.myColumns || []) as Column[];
   const tasks = (tasksData?.tasks || []) as Task[];
-  const labels = (labelsData?.labels || []) as Label[];
+  const labels = (labelsData?.myLabels || []) as Label[];
   const projects = (projectsData?.myProjects || []) as ProjectListItem[];
 
   // Group tasks by columnId
@@ -284,20 +283,53 @@ export const KanbanPage = () => {
           {projects.length > 0 && (
             <Dropdown
               trigger={
-                <button type="button" className="kanban__filter-btn">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M2 4h12M4 8h8M6 12h4" />
-                  </svg>
-                  Проекты
-                  {selectedProjectIds.length > 0 && (
-                    <span className="kanban__filter-count">{selectedProjectIds.length}</span>
+                <button type="button" className={`kanban__filter-btn ${selectedProjectIds.length > 0 ? 'kanban__filter-btn--active' : ''}`}>
+                  {selectedProjectIds.length > 0 ? (
+                    <>
+                      <div className="kanban__filter-dots">
+                        {selectedProjectIds.slice(0, 3).map((id) => {
+                          const project = projects.find(p => p.id === id);
+                          return (
+                            <span
+                              key={id}
+                              className="kanban__filter-dot-preview"
+                              style={{ backgroundColor: project?.color || '#737373' }}
+                            />
+                          );
+                        })}
+                      </div>
+                      {selectedProjectIds.length > 3 && (
+                        <span className="kanban__filter-more">+{selectedProjectIds.length - 3}</span>
+                      )}
+                      <span className="kanban__filter-label">
+                        {selectedProjectIds.length === 1
+                          ? projects.find(p => p.id === selectedProjectIds[0])?.name
+                          : `${selectedProjectIds.length} проекта`}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <circle cx="8" cy="8" r="3" />
+                        <path d="M8 2v2M8 12v2M2 8h2M12 8h2" />
+                      </svg>
+                      <span>Все проекты</span>
+                    </>
                   )}
+                  <svg className="kanban__filter-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M3 5l3 3 3-3" />
+                  </svg>
                 </button>
               }
             >
               {selectedProjectIds.length > 0 && (
                 <DropdownItem onClick={handleClearFilter}>
-                  <span style={{ color: 'var(--text-tertiary)' }}>Сбросить фильтр</span>
+                  <div className="kanban__filter-item kanban__filter-item--reset">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <path d="M10 4L4 10M4 4l6 6" />
+                    </svg>
+                    <span>Сбросить фильтр</span>
+                  </div>
                 </DropdownItem>
               )}
               {projects.map((project) => (
@@ -312,8 +344,8 @@ export const KanbanPage = () => {
                     />
                     <span>{project.name}</span>
                     {selectedProjectIds.includes(project.id) && (
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M13 4L6 11L3 8" />
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M11 4L5.5 9.5 3 7" />
                       </svg>
                     )}
                   </div>
@@ -322,9 +354,12 @@ export const KanbanPage = () => {
             </Dropdown>
           )}
 
-          <Button variant="primary" onClick={() => setIsCreateColumnOpen(true)}>
-            + Добавить колонку
-          </Button>
+          <button type="button" className="kanban__add-column-btn" onClick={() => setIsCreateColumnOpen(true)}>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M7 2v10M2 7h10" />
+            </svg>
+            Колонка
+          </button>
         </div>
       </div>
 

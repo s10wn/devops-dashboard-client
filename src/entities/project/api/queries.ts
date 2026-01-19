@@ -83,3 +83,21 @@ export const PROJECT_PAYMENT_HISTORY_QUERY = gql`
     }
   }
 `;
+
+export const ALL_PAYMENT_HISTORY_QUERY = gql`
+  query AllPaymentHistory($limit: Int) {
+    allPaymentHistory(limit: $limit) {
+      id
+      amount
+      paymentDate
+      note
+      monthsCovered
+      createdAt
+      project {
+        id
+        name
+        color
+      }
+    }
+  }
+`;

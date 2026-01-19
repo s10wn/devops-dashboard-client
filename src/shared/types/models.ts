@@ -71,7 +71,6 @@ export interface Task {
   position: number;
   columnId: string;
   dueDate?: string;
-  estimatedHours?: number;
   assignee?: Pick<User, 'id' | 'name' | 'email'>;
   labels: Label[];
   createdAt: string;

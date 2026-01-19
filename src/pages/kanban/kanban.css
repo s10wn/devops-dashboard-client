@@ -38,34 +38,62 @@
 .kanban__filter-btn {
   display: flex;
   align-items: center;
-  gap: var(--space-xs);
-  padding: var(--space-xs) var(--space-sm);
-  background: var(--bg-tertiary);
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--bg-secondary);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
-  font-size: 0.875rem;
-  color: var(--text-primary);
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .kanban__filter-btn:hover {
   border-color: var(--border-hover);
-  background: var(--bg-primary);
+  color: var(--text-primary);
 }
 
-.kanban__filter-count {
-  display: inline-flex;
+.kanban__filter-btn--active {
+  background: var(--bg-tertiary);
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+.kanban__filter-chevron {
+  opacity: 0.5;
+  transition: transform 0.15s ease;
+}
+
+.kanban__filter-dots {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  background: var(--accent);
-  color: var(--bg-secondary);
-  border-radius: 9px;
+}
+
+.kanban__filter-dot-preview {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid var(--bg-secondary);
+  margin-right: -4px;
+}
+
+.kanban__filter-dot-preview:last-child {
+  margin-right: 0;
+}
+
+.kanban__filter-more {
   font-size: 0.6875rem;
   font-weight: 600;
+  color: var(--text-tertiary);
+  margin-left: 2px;
+}
+
+.kanban__filter-label {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .kanban__filter-item {
@@ -73,6 +101,14 @@
   align-items: center;
   gap: var(--space-sm);
   width: 100%;
+}
+
+.kanban__filter-item--reset {
+  color: var(--text-tertiary);
+}
+
+.kanban__filter-item--reset:hover {
+  color: var(--text-secondary);
 }
 
 .kanban__filter-dot {
@@ -85,6 +121,32 @@
 .kanban__filter-item svg {
   margin-left: auto;
   color: var(--accent);
+}
+
+/* Add Column Button */
+.kanban__add-column-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.kanban__add-column-btn:hover {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+}
+
+.kanban__add-column-btn svg {
+  opacity: 0.7;
 }
 
 .kanban__board {

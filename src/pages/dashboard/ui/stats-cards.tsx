@@ -47,7 +47,7 @@ export const StatsCards = () => {
     },
     {
       label: 'Ежемесячно',
-      value: billing ? `${billing.totalMonthly.toLocaleString()} ₽` : '0 ₽',
+      value: billing ? `${billing.totalMonthly.toLocaleString()} сомони` : '0 сомони',
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
           <rect x="2" y="5" width="20" height="14" rx="2" />

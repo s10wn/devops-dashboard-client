@@ -73,14 +73,14 @@ const PROJECT_COLORS = [
 const CURRENCIES = [
   { value: 'USD', label: 'USD ($)' },
   { value: 'EUR', label: 'EUR (€)' },
-  { value: 'RUB', label: 'RUB (₽)' },
+  { value: 'RUB', label: 'RUB (сомони)' },
   { value: 'TJS', label: 'TJS' },
 ];
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
   USD: '$',
   EUR: '€',
-  RUB: '₽',
+  RUB: 'сомони',
   TJS: 'TJS',
 };
 
@@ -243,7 +243,7 @@ export const ProjectDetailModal = ({
   const formatCurrency = (amount?: number, currency?: string) => {
     if (!amount) return '-';
     const formatted = amount.toLocaleString('ru-RU');
-    if (currency === 'TJS') return `${formatted} сомони`;
+    if (currency === 'TJS' || currency === 'RUB') return `${formatted} сомони`;
     const symbol = CURRENCY_SYMBOLS[currency || 'USD'] || currency || '$';
     return `${symbol}${formatted}`;
   };

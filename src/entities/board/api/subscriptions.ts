@@ -25,10 +25,10 @@ export const TASK_UPDATED_SUBSCRIPTION = gql`
 export const TASK_MOVED_SUBSCRIPTION = gql`
   subscription OnTaskMoved {
     taskMoved {
-      id
-      columnId
-      position
-      previousColumnId
+      taskId
+      fromColumnId
+      toColumnId
+      newPosition
     }
   }
 `;
@@ -36,7 +36,7 @@ export const TASK_MOVED_SUBSCRIPTION = gql`
 export const TASK_DELETED_SUBSCRIPTION = gql`
   subscription OnTaskDeleted {
     taskDeleted {
-      id
+      taskId
       columnId
     }
   }

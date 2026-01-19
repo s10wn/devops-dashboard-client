@@ -35,7 +35,6 @@ export const TASKS_QUERY = gql`
       priority
       position
       dueDate
-      estimatedHours
       columnId
       projectId
       project {
@@ -59,7 +58,6 @@ export const TASK_QUERY = gql`
       priority
       position
       dueDate
-      estimatedHours
       columnId
       projectId
       project {
@@ -88,8 +86,8 @@ export const TASK_QUERY = gql`
 `;
 
 export const LABELS_QUERY = gql`
-  query Labels {
-    labels {
+  query MyLabels {
+    myLabels {
       id
       name
       color

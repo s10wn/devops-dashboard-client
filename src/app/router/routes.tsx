@@ -13,6 +13,9 @@ const ProjectsPage = lazy(() =>
 const ProjectPage = lazy(() =>
   import('@pages/projects/ui/project-page.tsx').then((m) => ({ default: m.ProjectPage }))
 );
+const PaymentsPage = lazy(() =>
+  import('@pages/payments/index.tsx').then((m) => ({ default: m.PaymentsPage }))
+);
 const SettingsPage = lazy(() =>
   import('@pages/settings/index.tsx').then((m) => ({ default: m.SettingsPage }))
 );
@@ -82,6 +85,14 @@ export const router = createBrowserRouter([
             element: (
               <Suspense fallback={<PageLoader />}>
                 <ProjectPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'payments',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <PaymentsPage />
               </Suspense>
             ),
           },
