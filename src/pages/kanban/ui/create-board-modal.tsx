@@ -1,20 +1,19 @@
 import { useState } from 'react';
 import { useMutation } from '@apollo/client/react';
-import { CREATE_BOARD_MUTATION, TEAM_BOARDS_QUERY } from '@entities/board';
+import { CREATE_BOARD_MUTATION, MY_BOARDS_QUERY } from '@entities/board';
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button, Input } from '@shared/ui';
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
-  teamId: string;
 };
 
-export const CreateBoardModal = ({ isOpen, onClose, teamId }: Props) => {
+export const CreateBoardModal = ({ isOpen, onClose }: Props) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
 
   const [createBoard, { loading }] = useMutation(CREATE_BOARD_MUTATION, {
-    refetchQueries: [{ query: TEAM_BOARDS_QUERY, variables: { teamId } }],
+    refetchQueries: [{ query: MY_BOARDS_QUERY }],
     onCompleted: () => {
       setName('');
       setDescription('');
@@ -29,7 +28,6 @@ export const CreateBoardModal = ({ isOpen, onClose, teamId }: Props) => {
     createBoard({
       variables: {
         input: {
-          teamId,
           name: name.trim(),
           description: description.trim() || undefined,
         },
