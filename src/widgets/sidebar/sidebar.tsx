@@ -54,6 +54,17 @@ const navItems: NavItem[] = [
     ),
   },
   {
+    path: '/kanban',
+    label: 'Канбан',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <rect x="3" y="3" width="4" height="14" rx="1" />
+        <rect x="8" y="3" width="4" height="10" rx="1" />
+        <rect x="13" y="3" width="4" height="6" rx="1" />
+      </svg>
+    ),
+  },
+  {
     path: '/settings',
     label: 'Настройки',
     icon: (

@@ -2,7 +2,7 @@ import { useEffect, useCallback, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import './modal.css';
 
-type ModalSize = 'sm' | 'md' | 'lg' | 'xl';
+type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
 type ModalFooterAlign = 'left' | 'center' | 'right' | 'between';
 
 interface ModalProps {

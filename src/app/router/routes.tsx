@@ -19,6 +19,9 @@ const PaymentsPage = lazy(() =>
 const SettingsPage = lazy(() =>
   import('@pages/settings/index.tsx').then((m) => ({ default: m.SettingsPage }))
 );
+const KanbanPage = lazy(() =>
+  import('@pages/kanban/index.tsx').then((m) => ({ default: m.KanbanPage }))
+);
 const LoginPage = lazy(() =>
   import('@pages/auth/login/index.tsx').then((m) => ({ default: m.LoginPage }))
 );
@@ -98,6 +101,14 @@ export const router = createBrowserRouter([
             element: (
               <Suspense fallback={<PageLoader />}>
                 <SettingsPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'kanban',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <KanbanPage />
               </Suspense>
             ),
           },
