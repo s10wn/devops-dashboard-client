@@ -1,20 +1,5 @@
-import { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { useQuery } from '@apollo/client/react';
-import { MY_TEAMS_QUERY, useTeamStore } from '@entities/team';
-import { CreateTeamModal } from '@features/team';
-import { Dropdown, DropdownItem, DropdownDivider, Skeleton } from '@shared/ui';
 import './sidebar.css';
-
-type Team = {
-  id: string;
-  name: string;
-  slug: string;
-};
-
-type MyTeamsData = {
-  myTeams: Team[];
-};
 
 type NavItem = {
   path: string;
@@ -81,18 +66,6 @@ const navItems: NavItem[] = [
 ];
 
 export const Sidebar = () => {
-  const { currentTeam, setCurrentTeam } = useTeamStore();
-  const { data, loading } = useQuery<MyTeamsData>(MY_TEAMS_QUERY);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-
-  const teams = data?.myTeams || [];
-
-  useEffect(() => {
-    if (!currentTeam && teams.length > 0) {
-      setCurrentTeam(teams[0]);
-    }
-  }, [currentTeam, teams, setCurrentTeam]);
-
   return (
     <aside className="sidebar">
       <div className="sidebar__logo">
@@ -102,47 +75,6 @@ export const Sidebar = () => {
           <path d="M2 12l10 5 10-5" />
         </svg>
         <span>DevOps</span>
-      </div>
-
-      <div className="sidebar__team">
-        {loading ? (
-          <Skeleton width="100%" height={40} variant="rectangular" />
-        ) : teams.length > 0 ? (
-          <Dropdown
-            trigger={
-              <button type="button" className="sidebar__team-btn">
-                <div className="sidebar__team-avatar">
-                  {currentTeam?.name?.charAt(0).toUpperCase() || 'T'}
-                </div>
-                <span className="sidebar__team-name">{currentTeam?.name || 'Выберите команду'}</span>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M4 6l4 4 4-4" />
-                </svg>
-              </button>
-            }
-          >
-            {teams.map((team) => (
-              <DropdownItem
-                key={team.id}
-                onClick={() => setCurrentTeam(team)}
-              >
-                {team.name}
-              </DropdownItem>
-            ))}
-            <DropdownDivider />
-            <DropdownItem onClick={() => setIsCreateModalOpen(true)}>
-              + Создать команду
-            </DropdownItem>
-          </Dropdown>
-        ) : (
-          <button
-            type="button"
-            className="sidebar__team-btn sidebar__team-btn--create"
-            onClick={() => setIsCreateModalOpen(true)}
-          >
-            + Создать команду
-          </button>
-        )}
       </div>
 
       <nav className="sidebar__nav">
@@ -159,11 +91,6 @@ export const Sidebar = () => {
           </NavLink>
         ))}
       </nav>
-
-      <CreateTeamModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-      />
     </aside>
   );
 };

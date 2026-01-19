@@ -1,8 +1,8 @@
 import { gql } from '@apollo/client';
 
-export const TEAM_SERVERS_QUERY = gql`
-  query TeamServers($teamId: ID!) {
-    teamServers(teamId: $teamId) {
+export const SERVERS_QUERY = gql`
+  query Servers {
+    servers {
       id
       name
       host
@@ -13,8 +13,8 @@ export const TEAM_SERVERS_QUERY = gql`
 `;
 
 export const BILLING_SUMMARY_QUERY = gql`
-  query BillingSummary($teamId: ID!) {
-    billingSummary(teamId: $teamId) {
+  query BillingSummary {
+    billingSummary {
       totalMonthly
       totalUpcoming
       upcomingPaymentsCount
@@ -24,9 +24,9 @@ export const BILLING_SUMMARY_QUERY = gql`
   }
 `;
 
-export const TEAM_BILLINGS_QUERY = gql`
-  query TeamBillings($teamId: ID!) {
-    teamBillings(teamId: $teamId) {
+export const BILLINGS_QUERY = gql`
+  query Billings {
+    billings {
       id
       serviceName
       amount

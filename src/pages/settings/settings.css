@@ -72,77 +72,6 @@
   margin-top: var(--space-sm);
 }
 
-/* Team Members */
-.settings__members {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-}
-
-.settings__member {
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-  padding: var(--space-md);
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-}
-
-.settings__member-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 0.875rem;
-  flex-shrink: 0;
-}
-
-.settings__member-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.settings__member-name {
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-.settings__member-email {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.settings__member-role {
-  font-size: 0.75rem;
-  padding: var(--space-xs) var(--space-sm);
-  border-radius: var(--radius-full);
-  background: var(--bg-tertiary);
-  color: var(--text-secondary);
-}
-
-.settings__member-role--owner {
-  background: var(--accent);
-  color: white;
-}
-
-.settings__member-role--admin {
-  background: var(--warning);
-  color: white;
-}
-
-.settings__member-actions {
-  display: flex;
-  gap: var(--space-xs);
-}
-
 /* Danger Zone */
 .settings__danger {
   margin-top: var(--space-xl);
@@ -184,13 +113,3 @@
   color: var(--text-secondary);
 }
 
-/* Invite Form */
-.settings__invite {
-  display: flex;
-  gap: var(--space-sm);
-  align-items: flex-end;
-}
-
-.settings__invite-input {
-  flex: 1;
-}

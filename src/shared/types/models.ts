@@ -1,6 +1,4 @@
 import {
-  TeamRole,
-  MemberStatus,
   TaskPriority,
   ServerStatus,
   CheckType,
@@ -39,26 +37,6 @@ export interface User {
   updatedAt: string;
 }
 
-// Team
-export interface TeamMember {
-  id: string;
-  role: TeamRole;
-  status: MemberStatus;
-  joinedAt?: string;
-  user: Pick<User, 'id' | 'name' | 'email' | 'avatarUrl'>;
-}
-
-export interface Team {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  logoUrl?: string;
-  isActive: boolean;
-  createdAt: string;
-  members: TeamMember[];
-}
-
 // Project
 export interface Project {
   id: string;
@@ -67,7 +45,6 @@ export interface Project {
   description?: string;
   color: string;
   isActive: boolean;
-  teamId: string;
   createdAt: string;
 }
 
@@ -115,7 +92,6 @@ export interface Board {
   name: string;
   slug: string;
   description?: string;
-  teamId: string;
   columns: Column[];
 }
 
@@ -153,7 +129,6 @@ export interface Server {
   agentConnected: boolean;
   isActive: boolean;
   metadata?: Record<string, unknown>;
-  teamId: string;
   projectId?: string;
   uptimePercentage?: number;
 }
@@ -218,7 +193,6 @@ export interface Alert {
   isEnabled: boolean;
   cooldownMinutes: number;
   lastTriggeredAt?: string;
-  teamId: string;
   serverId?: string;
   createdAt: string;
   updatedAt: string;

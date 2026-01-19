@@ -68,7 +68,6 @@ type ServerDetailData = {
     agentToken?: string;
     agentConnected: boolean;
     isActive: boolean;
-    teamId: string;
     projectId?: string;
     uptimePercentage?: number;
     provider?: string;

@@ -37,14 +37,12 @@ type CreateServerFormData = yup.InferType<typeof createServerSchema>;
 type CreateServerModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  teamId: string;
   onSuccess: () => void;
 };
 
 export const CreateServerModal = ({
   isOpen,
   onClose,
-  teamId,
   onSuccess,
 }: CreateServerModalProps) => {
   const {
@@ -76,7 +74,6 @@ export const CreateServerModal = ({
     createServer({
       variables: {
         input: {
-          teamId,
           name: data.name,
           host: data.host,
           port: data.port,

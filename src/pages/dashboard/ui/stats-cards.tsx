@@ -1,7 +1,6 @@
 import { useQuery } from '@apollo/client/react';
-import { useTeamStore } from '@entities/team';
 import { Card, Skeleton } from '@shared/ui';
-import { BILLING_SUMMARY_QUERY, TEAM_SERVERS_QUERY } from '../api';
+import { SERVERS_QUERY, BILLING_SUMMARY_QUERY } from '../api';
 import './stats-cards.css';
 
 type Server = {
@@ -16,7 +15,7 @@ type BillingSummary = {
 };
 
 type ServersData = {
-  teamServers: Server[];
+  servers: Server[];
 };
 
 type BillingSummaryData = {
@@ -24,25 +23,11 @@ type BillingSummaryData = {
 };
 
 export const StatsCards = () => {
-  const currentTeam = useTeamStore((s) => s.currentTeam);
+  const { data: serversData, loading: serversLoading } = useQuery<ServersData>(SERVERS_QUERY);
 
-  const { data: serversData, loading: serversLoading } = useQuery<ServersData>(
-    TEAM_SERVERS_QUERY,
-    {
-      variables: { teamId: currentTeam?.id },
-      skip: !currentTeam?.id,
-    }
-  );
+  const { data: billingData, loading: billingLoading } = useQuery<BillingSummaryData>(BILLING_SUMMARY_QUERY);
 
-  const { data: billingData, loading: billingLoading } = useQuery<BillingSummaryData>(
-    BILLING_SUMMARY_QUERY,
-    {
-      variables: { teamId: currentTeam?.id },
-      skip: !currentTeam?.id,
-    }
-  );
-
-  const servers = serversData?.teamServers || [];
+  const servers = serversData?.servers || [];
   const onlineServers = servers.filter((s) => s.status === 'ONLINE').length;
   const billing = billingData?.billingSummary;
 

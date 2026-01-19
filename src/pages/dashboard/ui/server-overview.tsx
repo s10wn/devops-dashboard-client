@@ -1,7 +1,6 @@
 import { useQuery } from '@apollo/client/react';
-import { useTeamStore } from '@entities/team';
 import { Card, CardHeader, CardBody, Badge, Skeleton } from '@shared/ui';
-import { TEAM_SERVERS_QUERY } from '../api';
+import { SERVERS_QUERY } from '../api';
 import './server-overview.css';
 
 type Server = {
@@ -13,7 +12,7 @@ type Server = {
 };
 
 type ServersData = {
-  teamServers: Server[];
+  servers: Server[];
 };
 
 const statusMap: Record<string, { variant: 'success' | 'error' | 'warning' | 'default'; label: string }> = {
@@ -24,14 +23,9 @@ const statusMap: Record<string, { variant: 'success' | 'error' | 'warning' | 'de
 };
 
 export const ServerOverview = () => {
-  const currentTeam = useTeamStore((s) => s.currentTeam);
+  const { data, loading } = useQuery<ServersData>(SERVERS_QUERY);
 
-  const { data, loading } = useQuery<ServersData>(TEAM_SERVERS_QUERY, {
-    variables: { teamId: currentTeam?.id },
-    skip: !currentTeam?.id,
-  });
-
-  const servers = data?.teamServers || [];
+  const servers = data?.servers || [];
 
   return (
     <Card padding="none">
