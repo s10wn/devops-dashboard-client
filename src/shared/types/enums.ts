@@ -1,16 +1,3 @@
-export enum TeamRole {
-  OWNER = 'OWNER',
-  ADMIN = 'ADMIN',
-  MEMBER = 'MEMBER',
-  VIEWER = 'VIEWER',
-}
-
-export enum MemberStatus {
-  PENDING = 'PENDING',
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE',
-}
-
 export enum TaskPriority {
   LOW = 'LOW',
   MEDIUM = 'MEDIUM',

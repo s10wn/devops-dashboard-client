@@ -9,7 +9,7 @@ import {
   Input,
   Select,
 } from '@shared/ui';
-import { TEAM_SERVERS_QUERY } from '@entities/server';
+import { SERVERS_QUERY } from '@entities/server';
 import { CREATE_BILLING_MUTATION, UPDATE_BILLING_MUTATION } from '@entities/billing';
 
 type Server = {
@@ -18,8 +18,8 @@ type Server = {
   host: string;
 };
 
-type TeamServersData = {
-  teamServers: Server[];
+type ServersData = {
+  servers: Server[];
 };
 
 type Billing = {
@@ -33,7 +33,6 @@ type Billing = {
 type CreateBillingModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  teamId: string;
   billing?: Billing | null;
   onSuccess: () => void;
 };
@@ -47,7 +46,6 @@ const currencyOptions = [
 export const CreateBillingModal = ({
   isOpen,
   onClose,
-  teamId,
   billing,
   onSuccess,
 }: CreateBillingModalProps) => {
@@ -58,12 +56,9 @@ export const CreateBillingModal = ({
   const [currency, setCurrency] = useState('USD');
   const [notes, setNotes] = useState('');
 
-  const { data: serversData } = useQuery<TeamServersData>(TEAM_SERVERS_QUERY, {
-    variables: { teamId },
-    skip: !teamId,
-  });
+  const { data: serversData } = useQuery<ServersData>(SERVERS_QUERY);
 
-  const servers = serversData?.teamServers || [];
+  const servers = serversData?.servers || [];
 
   const [createBilling, { loading: creating }] = useMutation(CREATE_BILLING_MUTATION, {
     onCompleted: () => {

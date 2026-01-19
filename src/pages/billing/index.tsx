@@ -17,9 +17,8 @@ import {
   ModalBody,
   ModalFooter,
 } from '@shared/ui';
-import { useTeamStore } from '@entities/team';
 import {
-  TEAM_BILLINGS_QUERY,
+  BILLINGS_QUERY,
   BILLING_SUMMARY_QUERY,
   DELETE_BILLING_MUTATION,
 } from '@entities/billing';
@@ -55,8 +54,8 @@ type BillingSummary = {
   overdueAmount: number;
 };
 
-type TeamBillingsData = {
-  teamBillings: Billing[];
+type BillingsData = {
+  billings: Billing[];
 };
 
 type BillingSummaryData = {
@@ -128,17 +127,9 @@ export const BillingPage = () => {
   const [billingToEdit, setBillingToEdit] = useState<Billing | null>(null);
   const [billingToDelete, setBillingToDelete] = useState<Billing | null>(null);
 
-  const currentTeam = useTeamStore((s) => s.currentTeam);
+  const { data: billingsData, loading: billingsLoading, refetch } = useQuery<BillingsData>(BILLINGS_QUERY);
 
-  const { data: billingsData, loading: billingsLoading, refetch } = useQuery<TeamBillingsData>(TEAM_BILLINGS_QUERY, {
-    variables: { teamId: currentTeam?.id },
-    skip: !currentTeam?.id,
-  });
-
-  const { data: summaryData, loading: summaryLoading, refetch: refetchSummary } = useQuery<BillingSummaryData>(BILLING_SUMMARY_QUERY, {
-    variables: { teamId: currentTeam?.id },
-    skip: !currentTeam?.id,
-  });
+  const { data: summaryData, loading: summaryLoading, refetch: refetchSummary } = useQuery<BillingSummaryData>(BILLING_SUMMARY_QUERY);
 
   const [deleteBilling, { loading: deleting }] = useMutation(DELETE_BILLING_MUTATION, {
     onCompleted: () => {
@@ -148,7 +139,7 @@ export const BillingPage = () => {
     },
   });
 
-  const billings = billingsData?.teamBillings || [];
+  const billings = billingsData?.billings || [];
   const summary = summaryData?.billingSummary || null;
 
   const filteredBillings = statusFilter === 'all'
@@ -165,19 +156,6 @@ export const BillingPage = () => {
     refetch();
     refetchSummary();
   };
-
-  if (!currentTeam) {
-    return (
-      <div className="billing">
-        <h1>Биллинг</h1>
-        <Card>
-          <CardBody>
-            <div className="billing__empty">Выберите команду для просмотра биллинга</div>
-          </CardBody>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="billing">
@@ -341,7 +319,6 @@ export const BillingPage = () => {
           setIsCreateModalOpen(false);
           setBillingToEdit(null);
         }}
-        teamId={currentTeam.id}
         billing={billingToEdit}
         onSuccess={handleRefetch}
       />

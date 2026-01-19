@@ -21,9 +21,9 @@ export const SERVER_BILLING_QUERY = gql`
   }
 `;
 
-export const TEAM_BILLINGS_QUERY = gql`
-  query TeamBillings($teamId: ID!) {
-    teamBillings(teamId: $teamId) {
+export const BILLINGS_QUERY = gql`
+  query Billings {
+    billings {
       id
       amount
       currency
@@ -43,8 +43,8 @@ export const TEAM_BILLINGS_QUERY = gql`
 `;
 
 export const BILLING_SUMMARY_QUERY = gql`
-  query BillingSummary($teamId: ID!) {
-    billingSummary(teamId: $teamId) {
+  query BillingSummary {
+    billingSummary {
       totalMonthly
       totalUpcoming
       upcomingPaymentsCount

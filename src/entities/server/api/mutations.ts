@@ -12,7 +12,6 @@ export const CREATE_SERVER_MUTATION = gql`
       checkInterval
       status
       isActive
-      teamId
       projectId
       provider
       monthlyPrice

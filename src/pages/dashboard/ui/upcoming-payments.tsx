@@ -1,7 +1,6 @@
 import { useQuery } from '@apollo/client/react';
-import { useTeamStore } from '@entities/team';
 import { Card, CardHeader, CardBody, Badge, Skeleton } from '@shared/ui';
-import { TEAM_BILLINGS_QUERY } from '../api';
+import { BILLINGS_QUERY } from '../api';
 import './upcoming-payments.css';
 
 type Billing = {
@@ -14,7 +13,7 @@ type Billing = {
 };
 
 type BillingsData = {
-  teamBillings: Billing[];
+  billings: Billing[];
 };
 
 const statusMap: Record<string, { variant: 'success' | 'error' | 'warning' | 'default'; label: string }> = {
@@ -33,14 +32,9 @@ const formatDate = (dateString: string) => {
 };
 
 export const UpcomingPayments = () => {
-  const currentTeam = useTeamStore((s) => s.currentTeam);
+  const { data, loading } = useQuery<BillingsData>(BILLINGS_QUERY);
 
-  const { data, loading } = useQuery<BillingsData>(TEAM_BILLINGS_QUERY, {
-    variables: { teamId: currentTeam?.id },
-    skip: !currentTeam?.id,
-  });
-
-  const billings = data?.teamBillings || [];
+  const billings = data?.billings || [];
   const upcoming = billings
     .filter((b) => b.paymentStatus === 'PENDING' || b.paymentStatus === 'OVERDUE')
     .slice(0, 5);

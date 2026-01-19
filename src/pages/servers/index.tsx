@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client/react';
 import {
-  TEAM_SERVERS_QUERY,
+  SERVERS_QUERY,
   DELETE_SERVER_MUTATION,
   TOGGLE_SERVER_MUTATION,
 } from '@entities/server';
-import { useTeamStore } from '@entities/team';
 import {
   Card,
   CardBody,
@@ -53,8 +52,8 @@ type Server = {
   monthlyPrice?: number;
 };
 
-type TeamServersData = {
-  teamServers: Server[];
+type ServersData = {
+  servers: Server[];
 };
 
 export const ServersPage = () => {
@@ -63,12 +62,7 @@ export const ServersPage = () => {
   const [selectedServer, setSelectedServer] = useState<Server | null>(null);
   const [serverToDelete, setServerToDelete] = useState<Server | null>(null);
 
-  const currentTeam = useTeamStore((s) => s.currentTeam);
-
-  const { data, loading, refetch } = useQuery<TeamServersData>(TEAM_SERVERS_QUERY, {
-    variables: { teamId: currentTeam?.id },
-    skip: !currentTeam?.id,
-  });
+  const { data, loading, refetch } = useQuery<ServersData>(SERVERS_QUERY);
 
   const [deleteServer, { loading: deleting }] = useMutation(DELETE_SERVER_MUTATION, {
     onCompleted: () => {
@@ -81,7 +75,7 @@ export const ServersPage = () => {
     onCompleted: () => refetch(),
   });
 
-  const servers = data?.teamServers || [];
+  const servers = data?.servers || [];
 
   const handleDeleteServer = () => {
     if (serverToDelete) {
@@ -127,19 +121,6 @@ export const ServersPage = () => {
     };
     return variants[status];
   };
-
-  if (!currentTeam) {
-    return (
-      <div className="servers">
-        <h1>Серверы</h1>
-        <Card>
-          <CardBody>
-            <div className="servers__empty">Выберите команду для просмотра серверов</div>
-          </CardBody>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="servers">
@@ -224,7 +205,6 @@ export const ServersPage = () => {
                 </span>
               </div>
 
-              {/* Agent Metrics */}
               {server.agentConnected && server.agentMetrics && (
                 <div className="server-card__metrics">
                   <div className="server-card__metric">
@@ -334,7 +314,6 @@ export const ServersPage = () => {
       <CreateServerModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        teamId={currentTeam.id}
         onSuccess={() => {
           setIsCreateModalOpen(false);
           refetch();

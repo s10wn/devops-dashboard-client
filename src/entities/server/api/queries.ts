@@ -1,8 +1,8 @@
 import { gql } from '@apollo/client';
 
-export const TEAM_SERVERS_QUERY = gql`
-  query TeamServers($teamId: ID!) {
-    teamServers(teamId: $teamId) {
+export const SERVERS_QUERY = gql`
+  query Servers {
+    servers {
       id
       name
       host
@@ -46,7 +46,6 @@ export const SERVER_QUERY = gql`
       agentConnected
       isActive
       metadata
-      teamId
       projectId
       uptimePercentage
       provider
