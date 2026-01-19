@@ -51,6 +51,7 @@ type Props = {
   onClose: () => void;
   task: Task | null;
   columnId: string;
+  labels: Label[];
   boardId: string;
 };
 
@@ -61,7 +62,7 @@ const PRIORITIES = [
   { value: 'URGENT', label: 'Срочный', color: '#ef4444', icon: '⚡' },
 ];
 
-export const TaskModal = ({ isOpen, onClose, task, columnId, boardId }: Props) => {
+export const TaskModal = ({ isOpen, onClose, task, columnId, labels, boardId }: Props) => {
   const isEdit = !!task;
 
   const [title, setTitle] = useState('');
@@ -69,7 +70,9 @@ export const TaskModal = ({ isOpen, onClose, task, columnId, boardId }: Props) =
   const [priority, setPriority] = useState<string>('MEDIUM');
   const [dueDate, setDueDate] = useState('');
   const [estimatedHours, setEstimatedHours] = useState('');
+  const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>([]);
   const [newComment, setNewComment] = useState('');
+  const [showLabelPicker, setShowLabelPicker] = useState(false);
 
   const { data: commentsData, refetch: refetchComments } = useQuery<{ taskComments: Comment[] }>(
     TASK_COMMENTS_QUERY,
@@ -109,12 +112,14 @@ export const TaskModal = ({ isOpen, onClose, task, columnId, boardId }: Props) =
       setPriority(task.priority);
       setDueDate(task.dueDate ? task.dueDate.split('T')[0] : '');
       setEstimatedHours(task.estimatedHours?.toString() || '');
+      setSelectedLabelIds(task.labels.map((l) => l.id));
     } else {
       setTitle('');
       setDescription('');
       setPriority('MEDIUM');
       setDueDate('');
       setEstimatedHours('');
+      setSelectedLabelIds([]);
     }
   }, [task]);
 
@@ -124,7 +129,9 @@ export const TaskModal = ({ isOpen, onClose, task, columnId, boardId }: Props) =
     setPriority('MEDIUM');
     setDueDate('');
     setEstimatedHours('');
+    setSelectedLabelIds([]);
     setNewComment('');
+    setShowLabelPicker(false);
     onClose();
   }
 
@@ -137,6 +144,7 @@ export const TaskModal = ({ isOpen, onClose, task, columnId, boardId }: Props) =
       priority,
       dueDate: dueDate || undefined,
       estimatedHours: estimatedHours ? parseFloat(estimatedHours) : undefined,
+      labelIds: selectedLabelIds.length > 0 ? selectedLabelIds : undefined,
     };
 
     if (isEdit) {
@@ -171,6 +179,12 @@ export const TaskModal = ({ isOpen, onClose, task, columnId, boardId }: Props) =
     });
   };
 
+  const toggleLabel = (labelId: string) => {
+    setSelectedLabelIds((prev) =>
+      prev.includes(labelId) ? prev.filter((id) => id !== labelId) : [...prev, labelId]
+    );
+  };
+
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('ru-RU', {
       day: 'numeric',
@@ -180,7 +194,13 @@ export const TaskModal = ({ isOpen, onClose, task, columnId, boardId }: Props) =
     });
   };
 
+  const getAssignee = () => {
+    // TODO: implement user selection when users API is available
+    return task?.assignee || null;
+  };
+
   const loading = creating || updating;
+  const assignee = getAssignee();
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} size="full">
@@ -330,6 +350,27 @@ export const TaskModal = ({ isOpen, onClose, task, columnId, boardId }: Props) =
 
           {/* Sidebar */}
           <div className="task-modal__sidebar">
+            {/* Assignee */}
+            <div className="task-modal__detail">
+              <div className="task-modal__detail-label">Исполнитель</div>
+              <div className="task-modal__detail-value">
+                {assignee ? (
+                  <div className="task-modal__assignee-preview">
+                    <div className="task-modal__avatar task-modal__avatar--xs">
+                      {assignee.avatarUrl ? (
+                        <img src={assignee.avatarUrl} alt={assignee.name} />
+                      ) : (
+                        <span>{assignee.name.charAt(0).toUpperCase()}</span>
+                      )}
+                    </div>
+                    <span>{assignee.name}</span>
+                  </div>
+                ) : (
+                  <span className="task-modal__no-assignee">Не назначен</span>
+                )}
+              </div>
+            </div>
+
             {/* Priority */}
             <div className="task-modal__detail">
               <div className="task-modal__detail-label">Приоритет</div>
@@ -377,6 +418,65 @@ export const TaskModal = ({ isOpen, onClose, task, columnId, boardId }: Props) =
                   />
                   <span className="task-modal__time-suffix">ч</span>
                 </div>
+              </div>
+            </div>
+
+            {/* Labels */}
+            <div className="task-modal__detail">
+              <div className="task-modal__detail-label">Метки</div>
+              <div className="task-modal__detail-value">
+                <button
+                  type="button"
+                  className="task-modal__labels-trigger"
+                  onClick={() => setShowLabelPicker(!showLabelPicker)}
+                >
+                  {selectedLabelIds.length > 0 ? (
+                    <div className="task-modal__selected-labels">
+                      {selectedLabelIds.map((id) => {
+                        const label = labels.find((l) => l.id === id);
+                        return label ? (
+                          <span
+                            key={id}
+                            className="task-modal__label-tag"
+                            style={{ background: label.color }}
+                          >
+                            {label.name}
+                          </span>
+                        ) : null;
+                      })}
+                    </div>
+                  ) : (
+                    <span className="task-modal__no-labels">+ Добавить метку</span>
+                  )}
+                </button>
+
+                {showLabelPicker && (
+                  <div className="task-modal__label-picker">
+                    {labels.length === 0 ? (
+                      <div className="task-modal__label-picker-empty">Нет доступных меток</div>
+                    ) : (
+                      labels.map((label) => (
+                        <button
+                          key={label.id}
+                          type="button"
+                          className={`task-modal__label-option ${selectedLabelIds.includes(label.id) ? 'task-modal__label-option--selected' : ''}`}
+                          onClick={() => toggleLabel(label.id)}
+                        >
+                          <span
+                            className="task-modal__label-color"
+                            style={{ background: label.color }}
+                          />
+                          <span className="task-modal__label-name">{label.name}</span>
+                          {selectedLabelIds.includes(label.id) && (
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                          )}
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>

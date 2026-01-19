@@ -7,6 +7,7 @@ export const BOARD_QUERY = gql`
       name
       slug
       description
+      teamId
       columns {
         id
         name
@@ -37,9 +38,9 @@ export const BOARD_QUERY = gql`
   }
 `;
 
-export const MY_BOARDS_QUERY = gql`
-  query MyBoards {
-    myBoards {
+export const BOARDS_QUERY = gql`
+  query Boards {
+    boards {
       id
       name
       slug
@@ -71,6 +72,16 @@ export const TASK_QUERY = gql`
       }
       createdAt
       updatedAt
+    }
+  }
+`;
+
+export const LABELS_QUERY = gql`
+  query Labels {
+    labels {
+      id
+      name
+      color
     }
   }
 `;

@@ -2,7 +2,8 @@ import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useMutation } from '@apollo/client/react';
 import {
   BOARD_QUERY,
-  MY_BOARDS_QUERY,
+  BOARDS_QUERY,
+  LABELS_QUERY,
   MOVE_TASK_MUTATION,
   TASK_CREATED_SUBSCRIPTION,
   TASK_UPDATED_SUBSCRIPTION,
@@ -69,12 +70,12 @@ export const KanbanPage = () => {
   const [selectedColumnId, setSelectedColumnId] = useState<string | null>(null);
   const [draggedTask, setDraggedTask] = useState<{ taskId: string; columnId: string } | null>(null);
 
-  const { data: boardsData, loading: boardsLoading } = useQuery<{ myBoards: BoardListItem[] }>(
-    MY_BOARDS_QUERY
+  const { data: boardsData, loading: boardsLoading } = useQuery<{ boards: BoardListItem[] }>(
+    BOARDS_QUERY
   );
 
   useEffect(() => {
-    const boards = boardsData?.myBoards;
+    const boards = boardsData?.boards;
     if (boards && boards.length > 0 && !selectedBoardId) {
       setSelectedBoardId(boards[0].id);
     }
@@ -123,12 +124,15 @@ export const KanbanPage = () => {
     };
   }, [selectedBoardId, subscribeToMore, refetchBoard]);
 
+  const { data: labelsData } = useQuery<{ labels: Label[] }>(LABELS_QUERY);
+
   const [moveTask] = useMutation(MOVE_TASK_MUTATION, {
     refetchQueries: selectedBoardId ? [{ query: BOARD_QUERY, variables: { id: selectedBoardId } }] : [],
   });
 
-  const boards = (boardsData?.myBoards || []) as BoardListItem[];
+  const boards = (boardsData?.boards || []) as BoardListItem[];
   const board = boardData?.board as Board | undefined;
+  const labels = (labelsData?.labels || []) as Label[];
   const selectedBoard = boards.find((b) => b.id === selectedBoardId);
 
   const handleDragStart = useCallback((e: React.DragEvent, taskId: string, columnId: string) => {
@@ -416,6 +420,7 @@ export const KanbanPage = () => {
           }}
           task={selectedTask}
           columnId={selectedColumnId}
+          labels={labels}
           boardId={selectedBoardId!}
         />
       )}

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation } from '@apollo/client/react';
-import { CREATE_BOARD_MUTATION, MY_BOARDS_QUERY } from '@entities/board';
+import { CREATE_BOARD_MUTATION, BOARDS_QUERY } from '@entities/board';
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button, Input } from '@shared/ui';
 
 type Props = {
@@ -13,7 +13,7 @@ export const CreateBoardModal = ({ isOpen, onClose }: Props) => {
   const [description, setDescription] = useState('');
 
   const [createBoard, { loading }] = useMutation(CREATE_BOARD_MUTATION, {
-    refetchQueries: [{ query: MY_BOARDS_QUERY }],
+    refetchQueries: [{ query: BOARDS_QUERY }],
     onCompleted: () => {
       setName('');
       setDescription('');
