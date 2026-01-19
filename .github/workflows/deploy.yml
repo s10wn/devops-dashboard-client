@@ -1,0 +1,45 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 155.212.168.72
+          username: deploy
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            
+            cd /var/www/cargo/frontend
+            
+            # Pull latest changes
+            git fetch origin main
+            git reset --hard origin/main
+            
+            # Install dependencies
+            yarn install --frozen-lockfile
+            
+            # Build
+            yarn build
+            
+            # Restart with PM2 (Next.js)
+            pm2 describe cargo-frontend > /dev/null 2>&1
+            if [ $? -eq 0 ]; then
+              pm2 restart cargo-frontend
+            else
+              pm2 start yarn --name cargo-frontend -- start
+            fi
+            
+            pm2 save
+            
+            echo "✅ Frontend deployed successfully!"
