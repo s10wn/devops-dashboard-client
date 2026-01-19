@@ -10,11 +10,8 @@ const DashboardPage = lazy(() =>
 const ProjectsPage = lazy(() =>
   import('@pages/projects/index.tsx').then((m) => ({ default: m.ProjectsPage }))
 );
-const ServersPage = lazy(() =>
-  import('@pages/servers/index.tsx').then((m) => ({ default: m.ServersPage }))
-);
-const PaymentsPage = lazy(() =>
-  import('@pages/payments/index.tsx').then((m) => ({ default: m.PaymentsPage }))
+const ProjectPage = lazy(() =>
+  import('@pages/projects/ui/project-page.tsx').then((m) => ({ default: m.ProjectPage }))
 );
 const SettingsPage = lazy(() =>
   import('@pages/settings/index.tsx').then((m) => ({ default: m.SettingsPage }))
@@ -81,18 +78,10 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: 'servers',
+            path: 'projects/:id',
             element: (
               <Suspense fallback={<PageLoader />}>
-                <ServersPage />
-              </Suspense>
-            ),
-          },
-          {
-            path: 'payments',
-            element: (
-              <Suspense fallback={<PageLoader />}>
-                <PaymentsPage />
+                <ProjectPage />
               </Suspense>
             ),
           },

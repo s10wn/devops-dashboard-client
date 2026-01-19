@@ -1,16 +1,17 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useQuery, useMutation } from '@apollo/client/react';
 import {
-  BOARD_QUERY,
-  BOARDS_QUERY,
+  MY_COLUMNS_QUERY,
+  TASKS_QUERY,
   LABELS_QUERY,
   MOVE_TASK_MUTATION,
   TASK_CREATED_SUBSCRIPTION,
   TASK_UPDATED_SUBSCRIPTION,
   TASK_MOVED_SUBSCRIPTION,
+  TASK_DELETED_SUBSCRIPTION,
 } from '@entities/board';
-import { Button, Dropdown, DropdownItem, DropdownDivider, Skeleton } from '@shared/ui';
-import { CreateBoardModal } from './ui/create-board-modal';
+import { MY_PROJECTS_QUERY } from '@entities/project';
+import { Button, Dropdown, DropdownItem, Skeleton } from '@shared/ui';
 import { CreateColumnModal } from './ui/create-column-modal';
 import { TaskModal } from './ui/task-modal';
 import './kanban.css';
@@ -21,10 +22,10 @@ type Label = {
   color: string;
 };
 
-type Assignee = {
+type Project = {
   id: string;
   name: string;
-  avatarUrl?: string;
+  color: string;
 };
 
 type Task = {
@@ -35,8 +36,12 @@ type Task = {
   position: number;
   dueDate?: string;
   estimatedHours?: number;
-  assignee?: Assignee;
-  labels: Label[];
+  columnId: string;
+  projectId?: string;
+  project?: Project;
+  assigneeId?: string;
+  createdById?: string;
+  createdAt: string;
 };
 
 type Column = {
@@ -45,75 +50,89 @@ type Column = {
   color: string;
   position: number;
   wipLimit?: number;
-  tasks: Task[];
+  userId: string;
 };
 
-type Board = {
+type ProjectListItem = {
   id: string;
   name: string;
-  slug: string;
-  description?: string;
-  columns: Column[];
+  color?: string;
 };
 
-type BoardListItem = {
-  id: string;
-  name: string;
-  slug: string;
+type TasksFilter = {
+  projectIds?: string[];
+  columnId?: string;
+  includeNoProject?: boolean;
 };
 
 export const KanbanPage = () => {
-  const [selectedBoardId, setSelectedBoardId] = useState<string | null>(null);
-  const [isCreateBoardOpen, setIsCreateBoardOpen] = useState(false);
   const [isCreateColumnOpen, setIsCreateColumnOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [selectedColumnId, setSelectedColumnId] = useState<string | null>(null);
   const [draggedTask, setDraggedTask] = useState<{ taskId: string; columnId: string } | null>(null);
+  const [selectedProjectIds, setSelectedProjectIds] = useState<string[]>([]);
 
-  const { data: boardsData, loading: boardsLoading } = useQuery<{ boards: BoardListItem[] }>(
-    BOARDS_QUERY
-  );
+  // Fetch columns
+  const {
+    data: columnsData,
+    loading: columnsLoading,
+    refetch: refetchColumns,
+  } = useQuery<{ myColumns: Column[] }>(MY_COLUMNS_QUERY);
 
-  useEffect(() => {
-    const boards = boardsData?.boards;
-    if (boards && boards.length > 0 && !selectedBoardId) {
-      setSelectedBoardId(boards[0].id);
+  // Fetch projects for filter
+  const { data: projectsData } = useQuery<{ myProjects: ProjectListItem[] }>(MY_PROJECTS_QUERY);
+
+  // Build filter for tasks
+  const tasksFilter: TasksFilter = useMemo(() => {
+    if (selectedProjectIds.length > 0) {
+      return { projectIds: selectedProjectIds };
     }
-  }, [boardsData, selectedBoardId]);
+    return {};
+  }, [selectedProjectIds]);
 
-  const { data: boardData, loading: boardLoading, refetch: refetchBoard, subscribeToMore } = useQuery<{ board: Board }>(
-    BOARD_QUERY,
-    {
-      variables: { id: selectedBoardId },
-      skip: !selectedBoardId,
-    }
-  );
+  // Fetch tasks with filter
+  const {
+    data: tasksData,
+    loading: tasksLoading,
+    refetch: refetchTasks,
+    subscribeToMore,
+  } = useQuery<{ tasks: Task[] }>(TASKS_QUERY, {
+    variables: { filter: tasksFilter },
+  });
 
   // Real-time subscriptions
   useEffect(() => {
-    if (!selectedBoardId || !subscribeToMore) return;
+    if (!subscribeToMore) return;
 
     const unsubscribeCreated = subscribeToMore({
       document: TASK_CREATED_SUBSCRIPTION,
-      variables: { boardId: selectedBoardId },
       updateQuery: () => {
-        refetchBoard();
+        refetchTasks();
+        return undefined as never;
       },
     });
 
     const unsubscribeUpdated = subscribeToMore({
       document: TASK_UPDATED_SUBSCRIPTION,
-      variables: { boardId: selectedBoardId },
       updateQuery: () => {
-        refetchBoard();
+        refetchTasks();
+        return undefined as never;
       },
     });
 
     const unsubscribeMoved = subscribeToMore({
       document: TASK_MOVED_SUBSCRIPTION,
-      variables: { boardId: selectedBoardId },
       updateQuery: () => {
-        refetchBoard();
+        refetchTasks();
+        return undefined as never;
+      },
+    });
+
+    const unsubscribeDeleted = subscribeToMore({
+      document: TASK_DELETED_SUBSCRIPTION,
+      updateQuery: () => {
+        refetchTasks();
+        return undefined as never;
       },
     });
 
@@ -121,19 +140,42 @@ export const KanbanPage = () => {
       unsubscribeCreated();
       unsubscribeUpdated();
       unsubscribeMoved();
+      unsubscribeDeleted();
     };
-  }, [selectedBoardId, subscribeToMore, refetchBoard]);
+  }, [subscribeToMore, refetchTasks]);
 
   const { data: labelsData } = useQuery<{ labels: Label[] }>(LABELS_QUERY);
 
   const [moveTask] = useMutation(MOVE_TASK_MUTATION, {
-    refetchQueries: selectedBoardId ? [{ query: BOARD_QUERY, variables: { id: selectedBoardId } }] : [],
+    onCompleted: () => {
+      refetchTasks();
+    },
   });
 
-  const boards = (boardsData?.boards || []) as BoardListItem[];
-  const board = boardData?.board as Board | undefined;
+  const columns = (columnsData?.myColumns || []) as Column[];
+  const tasks = (tasksData?.tasks || []) as Task[];
   const labels = (labelsData?.labels || []) as Label[];
-  const selectedBoard = boards.find((b) => b.id === selectedBoardId);
+  const projects = (projectsData?.myProjects || []) as ProjectListItem[];
+
+  // Group tasks by columnId
+  const tasksByColumn = useMemo(() => {
+    const grouped: Record<string, Task[]> = {};
+    columns.forEach((col) => {
+      grouped[col.id] = [];
+    });
+    tasks.forEach((task) => {
+      if (grouped[task.columnId]) {
+        grouped[task.columnId].push(task);
+      }
+    });
+    // Sort tasks by position within each column
+    Object.keys(grouped).forEach((colId) => {
+      grouped[colId].sort((a, b) => a.position - b.position);
+    });
+    return grouped;
+  }, [columns, tasks]);
+
+  const totalTasksCount = tasks.length;
 
   const handleDragStart = useCallback((e: React.DragEvent, taskId: string, columnId: string) => {
     setDraggedTask({ taskId, columnId });
@@ -150,32 +192,23 @@ export const KanbanPage = () => {
       e.preventDefault();
       if (!draggedTask) return;
 
-      const { taskId, columnId: sourceColumnId } = draggedTask;
-
-      if (sourceColumnId === targetColumnId) {
-        setDraggedTask(null);
-        return;
-      }
+      const { taskId } = draggedTask;
 
       try {
         await moveTask({
           variables: {
-            input: {
-              taskId,
-              targetColumnId,
-              newPosition: position,
-            },
+            taskId,
+            columnId: targetColumnId,
+            position,
           },
-          refetchQueries: [{ query: BOARD_QUERY, variables: { id: selectedBoardId } }],
-          awaitRefetchQueries: true,
         });
       } catch (error) {
-        console.error('Failed to move task:', error);
+        // Error handling
       }
 
       setDraggedTask(null);
     },
-    [draggedTask, moveTask, selectedBoardId]
+    [draggedTask, moveTask]
   );
 
   const handleAddTask = (columnId: string) => {
@@ -186,6 +219,18 @@ export const KanbanPage = () => {
   const handleTaskClick = (task: Task, columnId: string) => {
     setSelectedTask(task);
     setSelectedColumnId(columnId);
+  };
+
+  const handleProjectFilterToggle = (projectId: string) => {
+    setSelectedProjectIds((prev) =>
+      prev.includes(projectId)
+        ? prev.filter((id) => id !== projectId)
+        : [...prev, projectId]
+    );
+  };
+
+  const handleClearFilter = () => {
+    setSelectedProjectIds([]);
   };
 
   const formatDueDate = (dateStr: string) => {
@@ -210,7 +255,16 @@ export const KanbanPage = () => {
     return icons[priority];
   };
 
-  if (boardsLoading) {
+  const getTasksCountLabel = (count: number): string => {
+    if (count === 0) return '0 задач';
+    if (count === 1) return '1 задача';
+    if (count >= 2 && count <= 4) return `${count} задачи`;
+    return `${count} задач`;
+  };
+
+  const loading = columnsLoading || tasksLoading;
+
+  if (loading && columns.length === 0) {
     return (
       <div className="kanban__loading">
         <Skeleton width={300} height={400} variant="rectangular" />
@@ -220,100 +274,109 @@ export const KanbanPage = () => {
 
   return (
     <div className="kanban">
-      <header className="kanban__header">
-        <div className="kanban__header-left">
-          <h1 className="kanban__title">Канбан</h1>
-          {boards.length > 0 && (
+      <div className="kanban__header">
+        <div className="kanban__title">
+          <h1>Канбан</h1>
+          <span className="kanban__subtitle">{getTasksCountLabel(totalTasksCount)}</span>
+        </div>
+        <div className="kanban__actions">
+          {/* Project Filter */}
+          {projects.length > 0 && (
             <Dropdown
               trigger={
-                <button type="button" className="kanban__board-selector">
-                  {selectedBoard?.name || 'Выберите доску'}
+                <button type="button" className="kanban__filter-btn">
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M4 6l4 4 4-4" />
+                    <path d="M2 4h12M4 8h8M6 12h4" />
                   </svg>
+                  Проекты
+                  {selectedProjectIds.length > 0 && (
+                    <span className="kanban__filter-count">{selectedProjectIds.length}</span>
+                  )}
                 </button>
               }
             >
-              {boards.map((b) => (
-                <DropdownItem key={b.id} onClick={() => setSelectedBoardId(b.id)}>
-                  {b.name}
+              {selectedProjectIds.length > 0 && (
+                <DropdownItem onClick={handleClearFilter}>
+                  <span style={{ color: 'var(--text-tertiary)' }}>Сбросить фильтр</span>
+                </DropdownItem>
+              )}
+              {projects.map((project) => (
+                <DropdownItem
+                  key={project.id}
+                  onClick={() => handleProjectFilterToggle(project.id)}
+                >
+                  <div className="kanban__filter-item">
+                    <span
+                      className="kanban__filter-dot"
+                      style={{ backgroundColor: project.color || '#737373' }}
+                    />
+                    <span>{project.name}</span>
+                    {selectedProjectIds.includes(project.id) && (
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M13 4L6 11L3 8" />
+                      </svg>
+                    )}
+                  </div>
                 </DropdownItem>
               ))}
-              <DropdownDivider />
-              <DropdownItem onClick={() => setIsCreateBoardOpen(true)}>
-                + Создать доску
-              </DropdownItem>
             </Dropdown>
           )}
-        </div>
-        <div className="kanban__header-actions">
-          <Button variant="primary" size="sm" onClick={() => setIsCreateBoardOpen(true)}>
-            + Доска
+
+          <Button variant="primary" onClick={() => setIsCreateColumnOpen(true)}>
+            + Добавить колонку
           </Button>
         </div>
-      </header>
+      </div>
 
-      {boards.length === 0 ? (
+      {columns.length === 0 ? (
         <div className="kanban__empty">
           <svg className="kanban__empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <rect x="3" y="3" width="7" height="18" rx="1" />
             <rect x="14" y="3" width="7" height="12" rx="1" />
           </svg>
-          <h2 className="kanban__empty-title">Нет досок</h2>
-          <p className="kanban__empty-text">Создайте первую доску для управления задачами</p>
-          <Button variant="primary" onClick={() => setIsCreateBoardOpen(true)}>
-            Создать доску
+          <h2 className="kanban__empty-title">Нет колонок</h2>
+          <p className="kanban__empty-text">Создайте первую колонку для управления задачами</p>
+          <Button variant="primary" onClick={() => setIsCreateColumnOpen(true)}>
+            Создать колонку
           </Button>
         </div>
-      ) : boardLoading ? (
+      ) : (
         <div className="kanban__board">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="kanban__column">
-              <Skeleton width="100%" height={40} variant="rectangular" />
-              <div style={{ padding: '8px' }}>
-                <Skeleton width="100%" height={80} variant="rectangular" />
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : board ? (
-        <div className="kanban__board">
-          {board.columns
+          {columns
             .slice()
             .sort((a, b) => a.position - b.position)
-            .map((column) => (
-              <div key={column.id} className="kanban__column">
-                <div className="kanban__column-header">
-                  <div className="kanban__column-title">
-                    <span className="kanban__column-dot" style={{ backgroundColor: column.color }} />
-                    {column.name}
-                    <span className="kanban__column-count">{column.tasks.length}</span>
+            .map((column) => {
+              const columnTasks = tasksByColumn[column.id] || [];
+              return (
+                <div key={column.id} className="kanban__column">
+                  <div className="kanban__column-header">
+                    <div className="kanban__column-title">
+                      <span className="kanban__column-dot" style={{ backgroundColor: column.color }} />
+                      {column.name}
+                      <span className="kanban__column-count">{columnTasks.length}</span>
+                    </div>
+                    <div className="kanban__column-actions">
+                      <button type="button" className="kanban__column-btn" title="Настройки колонки">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                          <circle cx="8" cy="3" r="1" />
+                          <circle cx="8" cy="8" r="1" />
+                          <circle cx="8" cy="13" r="1" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
-                  <div className="kanban__column-actions">
-                    <button type="button" className="kanban__column-btn" title="Настройки колонки">
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                        <circle cx="8" cy="3" r="1" />
-                        <circle cx="8" cy="8" r="1" />
-                        <circle cx="8" cy="13" r="1" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
 
-                <div
-                  className={`kanban__column-tasks ${
-                    column.tasks.length === 0 ? 'kanban__column-tasks--empty' : ''
-                  }`}
-                  onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, column.id, column.tasks.length)}
-                >
-                  {column.tasks.length === 0 ? (
-                    <span>Нет задач</span>
-                  ) : (
-                    column.tasks
-                      .slice()
-                      .sort((a, b) => a.position - b.position)
-                      .map((task) => (
+                  <div
+                    className={`kanban__column-tasks ${
+                      columnTasks.length === 0 ? 'kanban__column-tasks--empty' : ''
+                    }`}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, column.id, columnTasks.length)}
+                  >
+                    {columnTasks.length === 0 ? (
+                      <span>Нет задач</span>
+                    ) : (
+                      columnTasks.map((task) => (
                         <div
                           key={task.id}
                           className={`task-card ${draggedTask?.taskId === task.id ? 'task-card--dragging' : ''}`}
@@ -321,23 +384,19 @@ export const KanbanPage = () => {
                           onDragStart={(e) => handleDragStart(e, task.id, column.id)}
                           onClick={() => handleTaskClick(task, column.id)}
                         >
-                          {task.labels.length > 0 && (
-                            <div className="task-card__labels">
-                              {task.labels.map((label) => (
-                                <span
-                                  key={label.id}
-                                  className="task-card__label"
-                                  style={{
-                                    backgroundColor: `${label.color}20`,
-                                    color: label.color,
-                                  }}
-                                >
-                                  {label.name}
-                                </span>
-                              ))}
+                          {/* Project badge */}
+                          {task.project && (
+                            <div className="task-card__project">
+                              <span
+                                className="task-card__project-dot"
+                                style={{ backgroundColor: task.project.color }}
+                              />
+                              <span className="task-card__project-name">{task.project.name}</span>
                             </div>
                           )}
+
                           <div className="task-card__title">{task.title}</div>
+
                           <div className="task-card__meta">
                             <div className="task-card__info">
                               <span className={`task-card__priority task-card__priority--${task.priority.toLowerCase()}`}>
@@ -356,33 +415,25 @@ export const KanbanPage = () => {
                                 );
                               })()}
                             </div>
-                            {task.assignee && (
-                              <div className="task-card__assignee">
-                                {task.assignee.avatarUrl ? (
-                                  <img src={task.assignee.avatarUrl} alt={task.assignee.name} />
-                                ) : (
-                                  task.assignee.name.charAt(0).toUpperCase()
-                                )}
-                              </div>
-                            )}
                           </div>
                         </div>
                       ))
-                  )}
-                </div>
+                    )}
+                  </div>
 
-                <button
-                  type="button"
-                  className="kanban__add-task"
-                  onClick={() => handleAddTask(column.id)}
-                >
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M8 3v10M3 8h10" />
-                  </svg>
-                  Добавить задачу
-                </button>
-              </div>
-            ))}
+                  <button
+                    type="button"
+                    className="kanban__add-task"
+                    onClick={() => handleAddTask(column.id)}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <path d="M8 3v10M3 8h10" />
+                    </svg>
+                    Добавить задачу
+                  </button>
+                </div>
+              );
+            })}
 
           <button
             type="button"
@@ -395,21 +446,14 @@ export const KanbanPage = () => {
             Добавить колонку
           </button>
         </div>
-      ) : null}
-
-      <CreateBoardModal
-        isOpen={isCreateBoardOpen}
-        onClose={() => setIsCreateBoardOpen(false)}
-      />
-
-      {selectedBoardId && (
-        <CreateColumnModal
-          isOpen={isCreateColumnOpen}
-          onClose={() => setIsCreateColumnOpen(false)}
-          boardId={selectedBoardId}
-          position={board?.columns.length || 0}
-        />
       )}
+
+      <CreateColumnModal
+        isOpen={isCreateColumnOpen}
+        onClose={() => setIsCreateColumnOpen(false)}
+        position={columns.length}
+        onSuccess={() => refetchColumns()}
+      />
 
       {selectedColumnId && (
         <TaskModal
@@ -421,7 +465,8 @@ export const KanbanPage = () => {
           task={selectedTask}
           columnId={selectedColumnId}
           labels={labels}
-          boardId={selectedBoardId!}
+          projects={projects}
+          onSuccess={() => refetchTasks()}
         />
       )}
     </div>

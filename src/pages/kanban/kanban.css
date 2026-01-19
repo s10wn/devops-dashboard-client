@@ -2,33 +2,40 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  gap: var(--space-lg);
   overflow: hidden;
 }
 
 .kanban__header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: var(--space-md) var(--space-lg);
-  border-bottom: 1px solid var(--border-default);
-  background: var(--bg-secondary);
+  align-items: center;
+  gap: var(--space-md);
   flex-shrink: 0;
 }
 
-.kanban__header-left {
+.kanban__title {
   display: flex;
-  align-items: center;
-  gap: var(--space-md);
+  flex-direction: column;
+  gap: var(--space-xs);
 }
 
-.kanban__title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text-primary);
+.kanban__title h1 {
   margin: 0;
 }
 
-.kanban__board-selector {
+.kanban__subtitle {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.kanban__actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+/* Project Filter */
+.kanban__filter-btn {
   display: flex;
   align-items: center;
   gap: var(--space-xs);
@@ -42,15 +49,42 @@
   transition: all 0.15s ease;
 }
 
-.kanban__board-selector:hover {
+.kanban__filter-btn:hover {
   border-color: var(--border-hover);
   background: var(--bg-primary);
 }
 
-.kanban__header-actions {
+.kanban__filter-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: var(--accent);
+  color: var(--bg-secondary);
+  border-radius: 9px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+.kanban__filter-item {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
+  width: 100%;
+}
+
+.kanban__filter-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.kanban__filter-item svg {
+  margin-left: auto;
+  color: var(--accent);
 }
 
 .kanban__board {
@@ -223,6 +257,34 @@
 .task-card--dragging {
   opacity: 0.5;
   transform: rotate(2deg);
+}
+
+/* Task Card Project Badge */
+.task-card__project {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px 2px 6px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  width: fit-content;
+}
+
+.task-card__project-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.task-card__project-name {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
 }
 
 .task-card__labels {

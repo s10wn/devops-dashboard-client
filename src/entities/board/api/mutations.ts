@@ -1,32 +1,5 @@
 import { gql } from '@apollo/client';
 
-// Board mutations
-export const CREATE_BOARD_MUTATION = gql`
-  mutation CreateBoard($input: CreateBoardInput!) {
-    createBoard(input: $input) {
-      id
-      name
-      slug
-    }
-  }
-`;
-
-export const UPDATE_BOARD_MUTATION = gql`
-  mutation UpdateBoard($input: UpdateBoardInput!) {
-    updateBoard(input: $input) {
-      id
-      name
-      description
-    }
-  }
-`;
-
-export const DELETE_BOARD_MUTATION = gql`
-  mutation DeleteBoard($boardId: ID!) {
-    deleteBoard(boardId: $boardId)
-  }
-`;
-
 // Column mutations
 export const CREATE_COLUMN_MUTATION = gql`
   mutation CreateColumn($input: CreateColumnInput!) {
@@ -35,7 +8,6 @@ export const CREATE_COLUMN_MUTATION = gql`
       name
       color
       position
-      wipLimit
     }
   }
 `;
@@ -46,19 +18,15 @@ export const UPDATE_COLUMN_MUTATION = gql`
       id
       name
       color
-      wipLimit
     }
   }
 `;
 
-export const REORDER_COLUMNS_MUTATION = gql`
-  mutation ReorderColumns($input: ReorderColumnsInput!) {
-    reorderColumns(input: $input) {
+export const MOVE_COLUMN_MUTATION = gql`
+  mutation MoveColumn($input: MoveColumnInput!) {
+    moveColumn(input: $input) {
       id
-      columns {
-        id
-        position
-      }
+      position
     }
   }
 `;
@@ -75,21 +43,7 @@ export const CREATE_TASK_MUTATION = gql`
     createTask(input: $input) {
       id
       title
-      description
-      priority
-      position
-      dueDate
-      estimatedHours
-      assignee {
-        id
-        name
-        avatarUrl
-      }
-      labels {
-        id
-        name
-        color
-      }
+      projectId
     }
   }
 `;
@@ -99,27 +53,14 @@ export const UPDATE_TASK_MUTATION = gql`
     updateTask(input: $input) {
       id
       title
-      description
-      priority
-      dueDate
-      estimatedHours
-      assignee {
-        id
-        name
-        avatarUrl
-      }
-      labels {
-        id
-        name
-        color
-      }
+      projectId
     }
   }
 `;
 
 export const MOVE_TASK_MUTATION = gql`
-  mutation MoveTask($input: MoveTaskInput!) {
-    moveTask(input: $input) {
+  mutation MoveTask($taskId: ID!, $columnId: ID!, $position: Int!) {
+    moveTask(taskId: $taskId, columnId: $columnId, position: $position) {
       id
       columnId
       position

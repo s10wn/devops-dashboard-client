@@ -13,10 +13,10 @@ const navItems: NavItem[] = [
     label: 'Обзор',
     icon: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <rect x="3" y="3" width="6" height="6" rx="1" />
-        <rect x="11" y="3" width="6" height="6" rx="1" />
-        <rect x="3" y="11" width="6" height="6" rx="1" />
-        <rect x="11" y="11" width="6" height="6" rx="1" />
+        <rect x="3" y="3" width="6" height="6" rx="1.5" />
+        <rect x="11" y="3" width="6" height="6" rx="1.5" />
+        <rect x="3" y="11" width="6" height="6" rx="1.5" />
+        <rect x="11" y="11" width="6" height="6" rx="1.5" />
       </svg>
     ),
   },
@@ -31,29 +31,6 @@ const navItems: NavItem[] = [
     ),
   },
   {
-    path: '/servers',
-    label: 'Серверы',
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <rect x="3" y="3" width="14" height="5" rx="1" />
-        <rect x="3" y="12" width="14" height="5" rx="1" />
-        <circle cx="6" cy="5.5" r="1" fill="currentColor" />
-        <circle cx="6" cy="14.5" r="1" fill="currentColor" />
-      </svg>
-    ),
-  },
-  {
-    path: '/payments',
-    label: 'Платежи',
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <rect x="2" y="4" width="16" height="12" rx="2" />
-        <path d="M2 8h16" />
-        <path d="M6 12h4" />
-      </svg>
-    ),
-  },
-  {
     path: '/kanban',
     label: 'Канбан',
     icon: (
@@ -64,31 +41,27 @@ const navItems: NavItem[] = [
       </svg>
     ),
   },
-  {
-    path: '/settings',
-    label: 'Настройки',
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <circle cx="10" cy="10" r="3" />
-        <path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.22 4.22l1.42 1.42M14.36 14.36l1.42 1.42M4.22 15.78l1.42-1.42M14.36 5.64l1.42-1.42" />
-      </svg>
-    ),
-  },
 ];
 
 export const Sidebar = () => {
   return (
     <aside className="sidebar">
       <div className="sidebar__logo">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M12 2L2 7l10 5 10-5-10-5z" />
-          <path d="M2 17l10 5 10-5" />
-          <path d="M2 12l10 5 10-5" />
-        </svg>
-        <span>DevOps</span>
+        <div className="sidebar__logo-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+            <path d="M2 17l10 5 10-5" />
+            <path d="M2 12l10 5 10-5" />
+          </svg>
+        </div>
+        <div className="sidebar__logo-text">
+          <span className="sidebar__logo-title">DevOps</span>
+          <span className="sidebar__logo-subtitle">Dashboard</span>
+        </div>
       </div>
 
       <nav className="sidebar__nav">
+        <div className="sidebar__nav-label">Menu</div>
         {navItems.map((item) => (
           <NavLink
             key={item.path}
@@ -98,10 +71,25 @@ export const Sidebar = () => {
             }
           >
             <span className="sidebar__nav-icon">{item.icon}</span>
-            <span className="sidebar__nav-label">{item.label}</span>
+            <span className="sidebar__nav-label-text">{item.label}</span>
           </NavLink>
         ))}
       </nav>
+
+      <div className="sidebar__footer">
+        <NavLink
+          to="/settings"
+          className={({ isActive }) =>
+            `sidebar__footer-item ${isActive ? 'sidebar__nav-item--active' : ''}`
+          }
+        >
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <circle cx="10" cy="10" r="3" />
+            <path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.22 4.22l1.42 1.42M14.36 14.36l1.42 1.42M4.22 15.78l1.42-1.42M14.36 5.64l1.42-1.42" />
+          </svg>
+          <span>Настройки</span>
+        </NavLink>
+      </div>
     </aside>
   );
 };

@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useMutation } from '@apollo/client/react';
-import { CREATE_COLUMN_MUTATION, BOARD_QUERY } from '@entities/board';
+import { CREATE_COLUMN_MUTATION, MY_COLUMNS_QUERY } from '@entities/board';
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button, Input } from '@shared/ui';
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
-  boardId: string;
   position: number;
+  onSuccess?: () => void;
 };
 
 const COLORS = [
@@ -22,18 +22,19 @@ const COLORS = [
   '#ec4899', // pink
 ];
 
-export const CreateColumnModal = ({ isOpen, onClose, boardId, position }: Props) => {
+export const CreateColumnModal = ({ isOpen, onClose, position, onSuccess }: Props) => {
   const [name, setName] = useState('');
   const [color, setColor] = useState(COLORS[0]);
   const [wipLimit, setWipLimit] = useState('');
 
   const [createColumn, { loading }] = useMutation(CREATE_COLUMN_MUTATION, {
-    refetchQueries: [{ query: BOARD_QUERY, variables: { id: boardId } }],
+    refetchQueries: [{ query: MY_COLUMNS_QUERY }],
     onCompleted: () => {
       setName('');
       setColor(COLORS[0]);
       setWipLimit('');
       onClose();
+      onSuccess?.();
     },
   });
 
@@ -44,7 +45,6 @@ export const CreateColumnModal = ({ isOpen, onClose, boardId, position }: Props)
     createColumn({
       variables: {
         input: {
-          boardId,
           name: name.trim(),
           color,
           position,

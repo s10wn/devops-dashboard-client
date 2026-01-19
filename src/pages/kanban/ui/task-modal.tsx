@@ -4,7 +4,7 @@ import {
   CREATE_TASK_MUTATION,
   UPDATE_TASK_MUTATION,
   DELETE_TASK_MUTATION,
-  BOARD_QUERY,
+  TASKS_QUERY,
   TASK_COMMENTS_QUERY,
   ADD_TASK_COMMENT_MUTATION,
 } from '@entities/board';
@@ -17,10 +17,10 @@ type Label = {
   color: string;
 };
 
-type Assignee = {
+type Project = {
   id: string;
   name: string;
-  avatarUrl?: string;
+  color?: string;
 };
 
 type Task = {
@@ -31,8 +31,9 @@ type Task = {
   position: number;
   dueDate?: string;
   estimatedHours?: number;
-  assignee?: Assignee;
-  labels: Label[];
+  columnId: string;
+  projectId?: string;
+  project?: Project;
 };
 
 type Comment = {
@@ -52,7 +53,8 @@ type Props = {
   task: Task | null;
   columnId: string;
   labels: Label[];
-  boardId: string;
+  projects: Project[];
+  onSuccess?: () => void;
 };
 
 const PRIORITIES = [
@@ -62,7 +64,7 @@ const PRIORITIES = [
   { value: 'URGENT', label: 'Срочный', color: '#ef4444', icon: '⚡' },
 ];
 
-export const TaskModal = ({ isOpen, onClose, task, columnId, labels, boardId }: Props) => {
+export const TaskModal = ({ isOpen, onClose, task, columnId, labels, projects, onSuccess }: Props) => {
   const isEdit = !!task;
 
   const [title, setTitle] = useState('');
@@ -71,6 +73,7 @@ export const TaskModal = ({ isOpen, onClose, task, columnId, labels, boardId }: 
   const [dueDate, setDueDate] = useState('');
   const [estimatedHours, setEstimatedHours] = useState('');
   const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>([]);
+  const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   const [newComment, setNewComment] = useState('');
   const [showLabelPicker, setShowLabelPicker] = useState(false);
 
@@ -84,18 +87,27 @@ export const TaskModal = ({ isOpen, onClose, task, columnId, labels, boardId }: 
   const comments = (commentsData?.taskComments || []) as Comment[];
 
   const [createTask, { loading: creating }] = useMutation(CREATE_TASK_MUTATION, {
-    refetchQueries: [{ query: BOARD_QUERY, variables: { id: boardId } }],
-    onCompleted: handleClose,
+    refetchQueries: [{ query: TASKS_QUERY }],
+    onCompleted: () => {
+      handleClose();
+      onSuccess?.();
+    },
   });
 
   const [updateTask, { loading: updating }] = useMutation(UPDATE_TASK_MUTATION, {
-    refetchQueries: [{ query: BOARD_QUERY, variables: { id: boardId } }],
-    onCompleted: handleClose,
+    refetchQueries: [{ query: TASKS_QUERY }],
+    onCompleted: () => {
+      handleClose();
+      onSuccess?.();
+    },
   });
 
   const [deleteTask, { loading: deleting }] = useMutation(DELETE_TASK_MUTATION, {
-    refetchQueries: [{ query: BOARD_QUERY, variables: { id: boardId } }],
-    onCompleted: handleClose,
+    refetchQueries: [{ query: TASKS_QUERY }],
+    onCompleted: () => {
+      handleClose();
+      onSuccess?.();
+    },
   });
 
   const [addComment, { loading: addingComment }] = useMutation(ADD_TASK_COMMENT_MUTATION, {
@@ -112,13 +124,15 @@ export const TaskModal = ({ isOpen, onClose, task, columnId, labels, boardId }: 
       setPriority(task.priority);
       setDueDate(task.dueDate ? task.dueDate.split('T')[0] : '');
       setEstimatedHours(task.estimatedHours?.toString() || '');
-      setSelectedLabelIds(task.labels.map((l) => l.id));
+      setSelectedProjectId(task.projectId || '');
+      setSelectedLabelIds([]);
     } else {
       setTitle('');
       setDescription('');
       setPriority('MEDIUM');
       setDueDate('');
       setEstimatedHours('');
+      setSelectedProjectId('');
       setSelectedLabelIds([]);
     }
   }, [task]);
@@ -129,6 +143,7 @@ export const TaskModal = ({ isOpen, onClose, task, columnId, labels, boardId }: 
     setPriority('MEDIUM');
     setDueDate('');
     setEstimatedHours('');
+    setSelectedProjectId('');
     setSelectedLabelIds([]);
     setNewComment('');
     setShowLabelPicker(false);
@@ -145,6 +160,7 @@ export const TaskModal = ({ isOpen, onClose, task, columnId, labels, boardId }: 
       dueDate: dueDate || undefined,
       estimatedHours: estimatedHours ? parseFloat(estimatedHours) : undefined,
       labelIds: selectedLabelIds.length > 0 ? selectedLabelIds : undefined,
+      projectId: selectedProjectId || undefined,
     };
 
     if (isEdit) {
@@ -194,13 +210,8 @@ export const TaskModal = ({ isOpen, onClose, task, columnId, labels, boardId }: 
     });
   };
 
-  const getAssignee = () => {
-    // TODO: implement user selection when users API is available
-    return task?.assignee || null;
-  };
-
   const loading = creating || updating;
-  const assignee = getAssignee();
+  const selectedProject = projects.find((p) => p.id === selectedProjectId);
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} size="full">
@@ -350,23 +361,30 @@ export const TaskModal = ({ isOpen, onClose, task, columnId, labels, boardId }: 
 
           {/* Sidebar */}
           <div className="task-modal__sidebar">
-            {/* Assignee */}
+            {/* Project */}
             <div className="task-modal__detail">
-              <div className="task-modal__detail-label">Исполнитель</div>
+              <div className="task-modal__detail-label">Проект</div>
               <div className="task-modal__detail-value">
-                {assignee ? (
-                  <div className="task-modal__assignee-preview">
-                    <div className="task-modal__avatar task-modal__avatar--xs">
-                      {assignee.avatarUrl ? (
-                        <img src={assignee.avatarUrl} alt={assignee.name} />
-                      ) : (
-                        <span>{assignee.name.charAt(0).toUpperCase()}</span>
-                      )}
-                    </div>
-                    <span>{assignee.name}</span>
+                <select
+                  className="task-modal__select"
+                  value={selectedProjectId}
+                  onChange={(e) => setSelectedProjectId(e.target.value)}
+                >
+                  <option value="">Без проекта</option>
+                  {projects.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+                {selectedProject && (
+                  <div className="task-modal__project-preview">
+                    <span
+                      className="task-modal__project-dot"
+                      style={{ backgroundColor: selectedProject.color || '#737373' }}
+                    />
+                    <span>{selectedProject.name}</span>
                   </div>
-                ) : (
-                  <span className="task-modal__no-assignee">Не назначен</span>
                 )}
               </div>
             </div>

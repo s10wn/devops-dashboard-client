@@ -1,55 +1,57 @@
 import { gql } from '@apollo/client';
 
-export const BOARD_QUERY = gql`
-  query Board($id: ID!) {
-    board(id: $id) {
+// Column queries
+export const MY_COLUMNS_QUERY = gql`
+  query MyColumns {
+    myColumns {
       id
       name
-      slug
-      description
-      teamId
-      columns {
-        id
-        name
-        color
-        position
-        wipLimit
-        tasks {
-          id
-          title
-          description
-          priority
-          position
-          dueDate
-          estimatedHours
-          assignee {
-            id
-            name
-            avatarUrl
-          }
-          labels {
-            id
-            name
-            color
-          }
-        }
-      }
+      color
+      position
+      wipLimit
+      userId
     }
   }
 `;
 
-export const BOARDS_QUERY = gql`
-  query Boards {
-    boards {
+export const COLUMN_QUERY = gql`
+  query GetColumn($id: ID!) {
+    column(id: $id) {
       id
       name
-      slug
+      color
+      position
+    }
+  }
+`;
+
+// Task queries
+export const TASKS_QUERY = gql`
+  query Tasks($filter: TasksFilterInput) {
+    tasks(filter: $filter) {
+      id
+      title
+      description
+      priority
+      position
+      dueDate
+      estimatedHours
+      columnId
+      projectId
+      project {
+        id
+        name
+        color
+      }
+      assigneeId
+      createdById
+      createdAt
     }
   }
 `;
 
 export const TASK_QUERY = gql`
-  query Task($id: ID!) {
+  query GetTask($id: ID!) {
     task(id: $id) {
       id
       title
@@ -59,16 +61,25 @@ export const TASK_QUERY = gql`
       dueDate
       estimatedHours
       columnId
-      assignee {
+      projectId
+      project {
         id
         name
-        email
-        avatarUrl
+        color
       }
       labels {
         id
         name
         color
+      }
+      comments {
+        id
+        content
+        author {
+          id
+          name
+        }
+        createdAt
       }
       createdAt
       updatedAt

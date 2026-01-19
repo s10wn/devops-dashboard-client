@@ -39,31 +39,50 @@ const authLink = setContext((_, { headers }) => {
   };
 });
 
-interface GraphQLErrorWithExtensions {
-  extensions?: { code?: string };
-}
+type NetworkErrorWithCode = Error & { statusCode?: number };
 
-interface ErrorWithErrors {
-  errors?: GraphQLErrorWithExtensions[];
-}
+type GraphQLErrorExtensions = {
+  code?: string;
+};
 
-const errorLink = onError(({ error }) => {
-  const typedError = error as ErrorWithErrors;
+type ErrorOptions = {
+  error?: Error & {
+    errors?: Array<{ extensions?: GraphQLErrorExtensions; message?: string }>;
+  };
+};
 
-  if (typedError.errors) {
-    for (const err of typedError.errors) {
-      if (err.extensions?.code === 'UNAUTHENTICATED') {
+const errorLink = onError((options: ErrorOptions) => {
+  const { error } = options;
+
+  // Handle GraphQL errors
+  if (error?.errors) {
+    for (const err of error.errors) {
+      const code = err.extensions?.code;
+
+      if (code === 'UNAUTHENTICATED' || code === 'FORBIDDEN') {
         const refreshToken = getRefreshToken();
-        if (refreshToken) {
+        if (refreshToken && code === 'UNAUTHENTICATED') {
           window.dispatchEvent(new CustomEvent('auth:refresh-needed'));
         } else {
           clearTokens();
           window.dispatchEvent(new CustomEvent('auth:logout'));
         }
+        return;
+      }
+
+      if (err.message) {
+        console.error(`[GraphQL error]: ${err.message}`);
       }
     }
-  } else {
-    console.error('[Network error]:', error);
+  }
+
+  // Handle network errors (401)
+  if (error) {
+    const netErr = error as NetworkErrorWithCode;
+    if (netErr.statusCode === 401) {
+      clearTokens();
+      window.dispatchEvent(new CustomEvent('auth:logout'));
+    }
   }
 });
 

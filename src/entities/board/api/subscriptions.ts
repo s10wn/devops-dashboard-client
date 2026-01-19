@@ -1,57 +1,43 @@
 import { gql } from '@apollo/client';
 
 export const TASK_CREATED_SUBSCRIPTION = gql`
-  subscription TaskCreated($boardId: ID!) {
-    taskCreated(boardId: $boardId) {
+  subscription OnTaskCreated {
+    taskCreated {
       id
       title
-      description
-      priority
-      position
       columnId
-      assignee {
-        id
-        name
-        avatarUrl
-      }
-      labels {
-        id
-        name
-        color
-      }
+      projectId
     }
   }
 `;
 
 export const TASK_UPDATED_SUBSCRIPTION = gql`
-  subscription TaskUpdated($boardId: ID!) {
-    taskUpdated(boardId: $boardId) {
+  subscription OnTaskUpdated {
+    taskUpdated {
       id
       title
-      description
-      priority
-      dueDate
-      estimatedHours
-      assignee {
-        id
-        name
-        avatarUrl
-      }
-      labels {
-        id
-        name
-        color
-      }
+      columnId
+      projectId
     }
   }
 `;
 
 export const TASK_MOVED_SUBSCRIPTION = gql`
-  subscription TaskMoved($boardId: ID!) {
-    taskMoved(boardId: $boardId) {
+  subscription OnTaskMoved {
+    taskMoved {
       id
       columnId
       position
+      previousColumnId
+    }
+  }
+`;
+
+export const TASK_DELETED_SUBSCRIPTION = gql`
+  subscription OnTaskDeleted {
+    taskDeleted {
+      id
+      columnId
     }
   }
 `;

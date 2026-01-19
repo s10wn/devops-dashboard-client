@@ -349,7 +349,8 @@
 /* Preview boxes */
 .task-modal__assignee-preview,
 .task-modal__priority-preview,
-.task-modal__date-preview {
+.task-modal__date-preview,
+.task-modal__project-preview {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
@@ -358,6 +359,13 @@
   background: var(--bg-secondary);
   border-radius: var(--radius-sm);
   font-size: 0.8125rem;
+}
+
+.task-modal__project-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .task-modal__priority-icon {
