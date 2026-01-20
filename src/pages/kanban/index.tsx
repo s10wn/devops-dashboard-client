@@ -195,9 +195,11 @@ export const KanbanPage = () => {
       try {
         await moveTask({
           variables: {
-            taskId,
-            columnId: targetColumnId,
-            position,
+            input: {
+              taskId,
+              targetColumnId,
+              newPosition: position,
+            },
           },
         });
       } catch (error) {

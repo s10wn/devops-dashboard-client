@@ -59,8 +59,8 @@ export const UPDATE_TASK_MUTATION = gql`
 `;
 
 export const MOVE_TASK_MUTATION = gql`
-  mutation MoveTask($taskId: ID!, $columnId: ID!, $position: Int!) {
-    moveTask(taskId: $taskId, columnId: $columnId, position: $position) {
+  mutation MoveTask($input: MoveTaskInput!) {
+    moveTask(input: $input) {
       id
       columnId
       position
