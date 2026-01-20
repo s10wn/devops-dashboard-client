@@ -9,6 +9,11 @@ export const COLUMNS_QUERY = gql`
       color
       position
       wipLimit
+      createdBy {
+        id
+        name
+        avatarUrl
+      }
     }
   }
 `;
@@ -42,8 +47,17 @@ export const TASKS_QUERY = gql`
         color
       }
       assigneeId
-      createdById
       createdAt
+      createdBy {
+        id
+        name
+        avatarUrl
+      }
+      updatedBy {
+        id
+        name
+        avatarUrl
+      }
     }
   }
 `;
@@ -80,6 +94,16 @@ export const TASK_QUERY = gql`
       }
       createdAt
       updatedAt
+      createdBy {
+        id
+        name
+        avatarUrl
+      }
+      updatedBy {
+        id
+        name
+        avatarUrl
+      }
     }
   }
 `;
@@ -90,6 +114,12 @@ export const LABELS_QUERY = gql`
       id
       name
       color
+      createdAt
+      createdBy {
+        id
+        name
+        avatarUrl
+      }
     }
   }
 `;

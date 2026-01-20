@@ -17,6 +17,16 @@ export const PROJECT_QUERY = gql`
       lastPaymentDate
       createdAt
       updatedAt
+      createdBy {
+        id
+        name
+        avatarUrl
+      }
+      updatedBy {
+        id
+        name
+        avatarUrl
+      }
     }
   }
 `;
@@ -36,6 +46,11 @@ export const PROJECTS_QUERY = gql`
       nextPaymentDate
       lastPaymentDate
       createdAt
+      createdBy {
+        id
+        name
+        avatarUrl
+      }
     }
   }
 `;
@@ -79,6 +94,11 @@ export const PROJECT_PAYMENT_HISTORY_QUERY = gql`
       monthsCovered
       projectId
       createdAt
+      createdBy {
+        id
+        name
+        avatarUrl
+      }
     }
   }
 `;
@@ -96,6 +116,11 @@ export const ALL_PAYMENT_HISTORY_QUERY = gql`
         id
         name
         color
+      }
+      createdBy {
+        id
+        name
+        avatarUrl
       }
     }
   }

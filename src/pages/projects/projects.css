@@ -489,6 +489,31 @@
   color: var(--text-tertiary);
 }
 
+/* Audit info */
+.project-detail__audit {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  font-size: 0.75rem;
+}
+
+.project-detail__audit-item {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.project-detail__audit-label {
+  color: var(--text-tertiary);
+  min-width: 60px;
+}
+
+.project-detail__audit-value {
+  color: var(--text-secondary);
+}
+
 /* ==================== */
 /* Project Page Styles  */
 /* ==================== */

@@ -21,6 +21,12 @@ import {
   Skeleton,
 } from '@shared/ui';
 
+type UserInfo = {
+  id: string;
+  name: string;
+  avatarUrl?: string;
+};
+
 type Project = {
   id: string;
   name: string;
@@ -34,12 +40,13 @@ type Project = {
   nextPaymentDate?: string;
   lastPaymentDate?: string;
   createdAt: string;
+  createdBy?: UserInfo;
 };
 
 type ProjectDetailData = {
   project: Project & {
     updatedAt?: string;
-    userId?: string;
+    updatedBy?: UserInfo;
   };
 };
 
@@ -427,6 +434,24 @@ export const ProjectDetailModal = ({
               <span className="project-detail__info-label">Последняя оплата</span>
               <span className="project-detail__info-value">{formatDate(projectDetail.lastPaymentDate)}</span>
             </div>
+          </div>
+
+          {/* Audit info */}
+          <div className="project-detail__audit">
+            <div className="project-detail__audit-item">
+              <span className="project-detail__audit-label">Создан</span>
+              <span className="project-detail__audit-value">
+                {projectDetail.createdBy?.name || 'Неизвестно'} • {formatDate(projectDetail.createdAt)}
+              </span>
+            </div>
+            {projectDetail.updatedBy && (
+              <div className="project-detail__audit-item">
+                <span className="project-detail__audit-label">Изменён</span>
+                <span className="project-detail__audit-value">
+                  {projectDetail.updatedBy.name} • {formatDate(projectDetail.updatedAt)}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Billing summary */}
