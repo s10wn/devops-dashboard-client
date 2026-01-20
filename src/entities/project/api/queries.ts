@@ -15,16 +15,15 @@ export const PROJECT_QUERY = gql`
       currency
       nextPaymentDate
       lastPaymentDate
-      userId
       createdAt
       updatedAt
     }
   }
 `;
 
-export const MY_PROJECTS_QUERY = gql`
-  query MyProjects {
-    myProjects {
+export const PROJECTS_QUERY = gql`
+  query Projects {
+    projects {
       id
       name
       slug

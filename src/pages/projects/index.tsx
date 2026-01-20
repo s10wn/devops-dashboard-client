@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@apollo/client/react';
-import { MY_PROJECTS_QUERY } from '@entities/project';
+import { PROJECTS_QUERY } from '@entities/project';
 import {
   Card,
   CardBody,
@@ -36,7 +36,7 @@ type Project = {
 };
 
 type ProjectsData = {
-  myProjects: Project[];
+  projects: Project[];
 };
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
@@ -51,9 +51,9 @@ export const ProjectsPage = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const { data, loading, refetch } = useQuery<ProjectsData>(MY_PROJECTS_QUERY);
+  const { data, loading, refetch } = useQuery<ProjectsData>(PROJECTS_QUERY);
 
-  const projects = data?.myProjects || [];
+  const projects = data?.projects || [];
 
   const formatCurrency = (amount?: number, currency?: string) => {
     if (!amount) return '-';

@@ -89,9 +89,24 @@ const errorLink = onError((options: ErrorOptions) => {
 const wsLink = new GraphQLWsLink(
   createClient({
     url: config.wsUrl,
-    connectionParams: () => ({
-      authorization: getAccessToken() ? `Bearer ${getAccessToken()}` : '',
-    }),
+    lazy: true,
+    connectionParams: () => {
+      const token = getAccessToken();
+      if (!token) {
+        return {};
+      }
+      return {
+        authorization: `Bearer ${token}`,
+      };
+    },
+    shouldRetry: () => true,
+    retryAttempts: 5,
+    retryWait: (retries) => new Promise((resolve) => setTimeout(resolve, Math.min(1000 * 2 ** retries, 30000))),
+    on: {
+      error: (error) => {
+        console.error('[WebSocket error]:', error);
+      },
+    },
   })
 );
 

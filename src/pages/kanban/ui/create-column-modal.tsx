@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation } from '@apollo/client/react';
-import { CREATE_COLUMN_MUTATION, MY_COLUMNS_QUERY } from '@entities/board';
+import { CREATE_COLUMN_MUTATION, COLUMNS_QUERY } from '@entities/board';
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button, Input } from '@shared/ui';
 
 type Props = {
@@ -28,7 +28,7 @@ export const CreateColumnModal = ({ isOpen, onClose, position, onSuccess }: Prop
   const [wipLimit, setWipLimit] = useState('');
 
   const [createColumn, { loading }] = useMutation(CREATE_COLUMN_MUTATION, {
-    refetchQueries: [{ query: MY_COLUMNS_QUERY }],
+    refetchQueries: [{ query: COLUMNS_QUERY }],
     onCompleted: () => {
       setName('');
       setColor(COLORS[0]);

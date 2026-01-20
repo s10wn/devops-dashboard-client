@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useQuery, useMutation } from '@apollo/client/react';
 import {
-  MY_COLUMNS_QUERY,
+  COLUMNS_QUERY,
   TASKS_QUERY,
   LABELS_QUERY,
   MOVE_TASK_MUTATION,
@@ -10,7 +10,7 @@ import {
   TASK_MOVED_SUBSCRIPTION,
   TASK_DELETED_SUBSCRIPTION,
 } from '@entities/board';
-import { MY_PROJECTS_QUERY } from '@entities/project';
+import { PROJECTS_QUERY } from '@entities/project';
 import { Button, Dropdown, DropdownItem, Skeleton } from '@shared/ui';
 import { CreateColumnModal } from './ui/create-column-modal';
 import { TaskModal } from './ui/task-modal';
@@ -49,7 +49,6 @@ type Column = {
   color: string;
   position: number;
   wipLimit?: number;
-  userId: string;
 };
 
 type ProjectListItem = {
@@ -76,10 +75,10 @@ export const KanbanPage = () => {
     data: columnsData,
     loading: columnsLoading,
     refetch: refetchColumns,
-  } = useQuery<{ myColumns: Column[] }>(MY_COLUMNS_QUERY);
+  } = useQuery<{ columns: Column[] }>(COLUMNS_QUERY);
 
   // Fetch projects for filter
-  const { data: projectsData } = useQuery<{ myProjects: ProjectListItem[] }>(MY_PROJECTS_QUERY);
+  const { data: projectsData } = useQuery<{ projects: ProjectListItem[] }>(PROJECTS_QUERY);
 
   // Build filter for tasks
   const tasksFilter: TasksFilter = useMemo(() => {
@@ -143,7 +142,7 @@ export const KanbanPage = () => {
     };
   }, [subscribeToMore, refetchTasks]);
 
-  const { data: labelsData } = useQuery<{ myLabels: Label[] }>(LABELS_QUERY);
+  const { data: labelsData } = useQuery<{ labels: Label[] }>(LABELS_QUERY);
 
   const [moveTask] = useMutation(MOVE_TASK_MUTATION, {
     onCompleted: () => {
@@ -151,10 +150,10 @@ export const KanbanPage = () => {
     },
   });
 
-  const columns = (columnsData?.myColumns || []) as Column[];
+  const columns = (columnsData?.columns || []) as Column[];
   const tasks = (tasksData?.tasks || []) as Task[];
-  const labels = (labelsData?.myLabels || []) as Label[];
-  const projects = (projectsData?.myProjects || []) as ProjectListItem[];
+  const labels = (labelsData?.labels || []) as Label[];
+  const projects = (projectsData?.projects || []) as ProjectListItem[];
 
   // Group tasks by columnId
   const tasksByColumn = useMemo(() => {

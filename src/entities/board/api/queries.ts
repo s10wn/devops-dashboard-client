@@ -1,15 +1,14 @@
 import { gql } from '@apollo/client';
 
 // Column queries
-export const MY_COLUMNS_QUERY = gql`
-  query MyColumns {
-    myColumns {
+export const COLUMNS_QUERY = gql`
+  query Columns {
+    columns {
       id
       name
       color
       position
       wipLimit
-      userId
     }
   }
 `;
@@ -86,8 +85,8 @@ export const TASK_QUERY = gql`
 `;
 
 export const LABELS_QUERY = gql`
-  query MyLabels {
-    myLabels {
+  query Labels {
+    labels {
       id
       name
       color
