@@ -32,3 +32,6 @@ export { Dropdown, DropdownItem, DropdownDivider, DropdownLabel } from './dropdo
 
 // Select
 export { Select } from './select';
+
+// Rich Text Editor
+export { RichTextEditor } from './rich-text-editor';

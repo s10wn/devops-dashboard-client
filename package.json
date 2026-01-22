@@ -12,6 +12,12 @@
   "dependencies": {
     "@apollo/client": "^4.0.11",
     "@hookform/resolvers": "^5.2.2",
+    "@tiptap/extension-image": "^3.16.0",
+    "@tiptap/extension-link": "^3.16.0",
+    "@tiptap/extension-placeholder": "^3.16.0",
+    "@tiptap/pm": "^3.16.0",
+    "@tiptap/react": "^3.16.0",
+    "@tiptap/starter-kit": "^3.16.0",
     "graphql": "^16.12.0",
     "graphql-ws": "^6.0.6",
     "react": "^19.2.3",

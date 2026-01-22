@@ -5,3 +5,6 @@ export {
   getAccessToken,
   getRefreshToken,
 } from './apollo-client';
+
+export { attachmentsApi } from './attachments';
+export type { Attachment } from './attachments';

@@ -179,6 +179,10 @@
   color: var(--text-tertiary);
 }
 
+.payments-page__item-author {
+  color: var(--text-secondary);
+}
+
 .payments-page__item-right {
   display: flex;
   flex-direction: column;

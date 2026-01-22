@@ -12,6 +12,12 @@ type Project = {
   currency?: string;
 };
 
+type UserInfo = {
+  id: string;
+  name: string;
+  avatarUrl?: string;
+};
+
 type Payment = {
   id: string;
   amount: number;
@@ -20,6 +26,7 @@ type Payment = {
   monthsCovered: number;
   createdAt: string;
   project: Project;
+  createdBy?: UserInfo;
 };
 
 type PaymentsData = {
@@ -230,7 +237,12 @@ export const PaymentsPage = () => {
                       />
                       <div className="payments-page__item-info">
                         <span className="payments-page__item-project">{payment.project.name}</span>
-                        <span className="payments-page__item-date">{formatDate(payment.paymentDate)}</span>
+                        <span className="payments-page__item-date">
+                          {formatDate(payment.paymentDate)}
+                          {payment.createdBy && (
+                            <span className="payments-page__item-author"> • {payment.createdBy.name}</span>
+                          )}
+                        </span>
                       </div>
                     </div>
                     <div className="payments-page__item-right">

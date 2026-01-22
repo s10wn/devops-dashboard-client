@@ -433,6 +433,31 @@
   object-fit: cover;
 }
 
+/* Task audit info */
+.task-card__audit {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-xs);
+  padding-top: var(--space-xs);
+  border-top: 1px solid var(--border-default);
+}
+
+.task-card__audit-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.6875rem;
+  color: var(--text-tertiary);
+}
+
+.task-card__audit-item svg {
+  opacity: 0.7;
+}
+
+.task-card__audit-item--updated {
+  color: var(--text-secondary);
+}
+
 /* Empty state */
 .kanban__empty {
   flex: 1;

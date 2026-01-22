@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useMutation, useQuery } from '@apollo/client/react';
 import {
   CREATE_TASK_MUTATION,
@@ -8,7 +8,8 @@ import {
   TASK_COMMENTS_QUERY,
   ADD_TASK_COMMENT_MUTATION,
 } from '@entities/board';
-import { Modal, Button } from '@shared/ui';
+import { Modal, Button, RichTextEditor } from '@shared/ui';
+import { attachmentsApi, type Attachment } from '@shared/api';
 import './task-modal.css';
 
 type Label = {
@@ -74,6 +75,10 @@ export const TaskModal = ({ isOpen, onClose, task, columnId, labels, projects, o
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   const [newComment, setNewComment] = useState('');
   const [showLabelPicker, setShowLabelPicker] = useState(false);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: commentsData, refetch: refetchComments } = useQuery<{ taskComments: Comment[] }>(
     TASK_COMMENTS_QUERY,
@@ -115,6 +120,19 @@ export const TaskModal = ({ isOpen, onClose, task, columnId, labels, projects, o
     },
   });
 
+  const loadAttachments = useCallback(async () => {
+    if (!task?.id) {
+      setAttachments([]);
+      return;
+    }
+    try {
+      const data = await attachmentsApi.getTaskAttachments(task.id);
+      setAttachments(data);
+    } catch (error) {
+      console.error('Failed to load attachments:', error);
+    }
+  }, [task?.id]);
+
   useEffect(() => {
     if (task) {
       setTitle(task.title);
@@ -123,6 +141,7 @@ export const TaskModal = ({ isOpen, onClose, task, columnId, labels, projects, o
       setDueDate(task.dueDate ? task.dueDate.split('T')[0] : '');
       setSelectedProjectId(task.projectId || '');
       setSelectedLabelIds([]);
+      loadAttachments();
     } else {
       setTitle('');
       setDescription('');
@@ -130,8 +149,9 @@ export const TaskModal = ({ isOpen, onClose, task, columnId, labels, projects, o
       setDueDate('');
       setSelectedProjectId('');
       setSelectedLabelIds([]);
+      setAttachments([]);
     }
-  }, [task]);
+  }, [task, loadAttachments]);
 
   function handleClose() {
     setTitle('');
@@ -142,15 +162,67 @@ export const TaskModal = ({ isOpen, onClose, task, columnId, labels, projects, o
     setSelectedLabelIds([]);
     setNewComment('');
     setShowLabelPicker(false);
+    setAttachments([]);
+    setUploadError(null);
     onClose();
   }
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0 || !task?.id) return;
+
+    setUploading(true);
+    setUploadError(null);
+
+    try {
+      for (const file of Array.from(files)) {
+        const attachment = await attachmentsApi.uploadFile(task.id, file);
+        setAttachments((prev) => [attachment, ...prev]);
+      }
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : 'Upload failed');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleDeleteAttachment = async (attachmentId: string) => {
+    if (!confirm('Удалить файл?')) return;
+
+    try {
+      await attachmentsApi.deleteAttachment(attachmentId);
+      setAttachments((prev) => prev.filter((a) => a.id !== attachmentId));
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : 'Delete failed');
+    }
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  const getFileIcon = (mimeType: string): string => {
+    if (mimeType.startsWith('image/')) return '🖼️';
+    if (mimeType === 'application/pdf') return '📄';
+    if (mimeType.includes('spreadsheet') || mimeType.includes('excel')) return '📊';
+    if (mimeType.includes('document') || mimeType.includes('word')) return '📝';
+    return '📎';
+  };
 
   const handleSubmit = () => {
     if (!title.trim()) return;
 
+    // Check if description has actual content (not just empty HTML tags)
+    const hasContent = description && description.replace(/<[^>]*>/g, '').trim().length > 0;
+
     const input = {
       title: title.trim(),
-      description: description.trim() || undefined,
+      description: hasContent ? description : undefined,
       priority,
       dueDate: dueDate || undefined,
       labelIds: selectedLabelIds.length > 0 ? selectedLabelIds : undefined,
@@ -271,12 +343,10 @@ export const TaskModal = ({ isOpen, onClose, task, columnId, labels, projects, o
                 </svg>
                 <span>Описание</span>
               </div>
-              <textarea
-                className="task-modal__description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+              <RichTextEditor
+                content={description}
+                onChange={setDescription}
                 placeholder="Добавьте описание задачи..."
-                rows={6}
               />
             </div>
 
@@ -464,6 +534,88 @@ export const TaskModal = ({ isOpen, onClose, task, columnId, labels, projects, o
                 )}
               </div>
             </div>
+
+            {/* Attachments - only show for existing tasks */}
+            {isEdit && (
+              <div className="task-modal__detail task-modal__detail--attachments">
+                <div className="task-modal__detail-label">
+                  Файлы
+                  <span className="task-modal__attachment-count">{attachments.length}</span>
+                </div>
+                <div className="task-modal__detail-value">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileSelect}
+                    multiple
+                    accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv"
+                    style={{ display: 'none' }}
+                  />
+                  <button
+                    type="button"
+                    className="task-modal__upload-btn"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                  >
+                    {uploading ? (
+                      <>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="task-modal__upload-spinner">
+                          <circle cx="12" cy="12" r="10" strokeDasharray="32" strokeDashoffset="12"/>
+                        </svg>
+                        Загрузка...
+                      </>
+                    ) : (
+                      <>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                        </svg>
+                        Загрузить файл
+                      </>
+                    )}
+                  </button>
+
+                  {uploadError && (
+                    <div className="task-modal__upload-error">{uploadError}</div>
+                  )}
+
+                  {attachments.length > 0 && (
+                    <div className="task-modal__attachments-list">
+                      {attachments.map((attachment) => (
+                        <div key={attachment.id} className="task-modal__attachment">
+                          <span className="task-modal__attachment-icon">
+                            {getFileIcon(attachment.mimeType)}
+                          </span>
+                          <div className="task-modal__attachment-info">
+                            <a
+                              href={attachmentsApi.getDownloadUrl(attachment.id)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="task-modal__attachment-name"
+                            >
+                              {attachment.originalName}
+                            </a>
+                            <span className="task-modal__attachment-meta">
+                              {formatFileSize(attachment.size)}
+                              {attachment.uploadedBy && ` • ${attachment.uploadedBy.name}`}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            className="task-modal__attachment-delete"
+                            onClick={() => handleDeleteAttachment(attachment.id)}
+                            title="Удалить"
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M18 6L6 18M6 6l12 12"/>
+                            </svg>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

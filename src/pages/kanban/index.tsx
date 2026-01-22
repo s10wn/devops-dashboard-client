@@ -28,6 +28,12 @@ type Project = {
   color: string;
 };
 
+type UserInfo = {
+  id: string;
+  name: string;
+  avatarUrl?: string;
+};
+
 type Task = {
   id: string;
   title: string;
@@ -39,8 +45,9 @@ type Task = {
   projectId?: string;
   project?: Project;
   assigneeId?: string;
-  createdById?: string;
   createdAt: string;
+  createdBy?: UserInfo;
+  updatedBy?: UserInfo;
 };
 
 type Column = {
@@ -451,6 +458,26 @@ export const KanbanPage = () => {
                                 );
                               })()}
                             </div>
+                          </div>
+
+                          {/* Audit info */}
+                          <div className="task-card__audit">
+                            {task.createdBy && (
+                              <span className="task-card__audit-item" title={`Создал: ${task.createdBy.name}`}>
+                                <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor">
+                                  <path d="M6 6a2.5 2.5 0 100-5 2.5 2.5 0 000 5zm0 1c-2.67 0-5 1.34-5 3v1h10v-1c0-1.66-2.33-3-5-3z"/>
+                                </svg>
+                                {task.createdBy.name.split(' ')[0]}
+                              </span>
+                            )}
+                            {task.updatedBy && task.updatedBy.id !== task.createdBy?.id && (
+                              <span className="task-card__audit-item task-card__audit-item--updated" title={`Изменил: ${task.updatedBy.name}`}>
+                                <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                  <path d="M9 1L11 3L4 10H2V8L9 1Z"/>
+                                </svg>
+                                {task.updatedBy.name.split(' ')[0]}
+                              </span>
+                            )}
                           </div>
                         </div>
                       ))
