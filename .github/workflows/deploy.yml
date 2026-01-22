@@ -8,7 +8,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Deploy to server
         uses: appleboy/ssh-action@v1.0.3
@@ -19,27 +19,20 @@ jobs:
           script: |
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            
+
             cd /var/www/cargo/frontend
-            
+
             # Pull latest changes
             git fetch origin main
             git reset --hard origin/main
-            
+
+            # Copy production env
+            cp /var/www/cargo/deploy/configs/.env.frontend.production .env.production 2>/dev/null || true
+
             # Install dependencies
             yarn install --frozen-lockfile
-            
-            # Build
+
+            # Build for production (nginx serves static files from dist/)
             yarn build
-            
-            # Restart with PM2
-            pm2 describe cargo-frontend > /dev/null 2>&1
-            if [ $? -eq 0 ]; then
-              pm2 restart cargo-frontend
-            else
-              pm2 start "yarn preview --host 0.0.0.0 --port 3001" --name cargo-frontend
-            fi
-            
-            pm2 save
-            
-            echo "✅ Frontend deployed successfully!"
+
+            echo "✅ Frontend deployed successfully! (served by nginx)"
